@@ -302,7 +302,7 @@ function fn_manufacturer_get_node_products($params = [], $node_id = 0, $lang_cod
 
     list($products, $params) = fn_get_products($params, $params['items_per_page'], $lang_code);
 
-    // Enrich with features and prices — the standard CS-Cart way.
+    // Enrich with features and prices вЂ” the standard CS-Cart way.
     $auth = Tygh::$app['session']['auth'];
     foreach ($products as $product_id => $product) {
         $products[$product_id] = fn_get_product_data($product_id, $auth, $lang_code);
@@ -379,13 +379,25 @@ function fn_manufacturer_migrate_from_pages()
         return true;
     }
 
+    // The helper column exists only if the 2.x addon was installed before.
+    // On a fresh install there is no manufacturer_elem_type column, so we must
+    // not select it (otherwise an "Unknown column" DB error aborts the install).
+    $elem_type_col = db_get_row(
+        'SHOW COLUMNS FROM ?:pages LIKE ?s',
+        'manufacturer_elem_type'
+    );
+    $elem_type_sql = !empty($elem_type_col)
+        ? 'p.manufacturer_elem_type'
+        : "'' AS manufacturer_elem_type";
+
     $pages = db_get_array(
         'SELECT p.page_id, p.parent_id, p.id_path, p.status, p.position, p.timestamp,'
-        . ' p.manufacturer_elem_type, pd.page AS name, pd.description, pd.lang_code'
+        . ' ?p AS elem_type_field, pd.page AS name, pd.description, pd.lang_code'
         . ' FROM ?:pages AS p'
         . ' LEFT JOIN ?:page_descriptions AS pd ON pd.page_id = p.page_id'
         . ' WHERE p.page_type = ?s'
         . ' ORDER BY p.parent_id ASC, p.position ASC',
+        $elem_type_sql,
         'M'
     );
 
@@ -438,7 +450,9 @@ function fn_manufacturer_migrate_from_pages()
             );
         }
 
-        // Migrate image pairs from the old 'manufacturer_page' type to 'nomenclature_main'
+        // Migrate image pairs from the old 'manufacturer_page' type to 'nomenclature_main'.
+        // NOTE: use a hard-coded type string вЂ” during install the addon's config.php
+        // is not loaded, so IMAGE_TYPE_NOMENCLATURE_MAIN constant is undefined.
         $pairs = db_get_array(
             'SELECT * FROM ?:images_links WHERE object_id = ?i AND object_type = ?s',
             $node_id,
@@ -446,7 +460,7 @@ function fn_manufacturer_migrate_from_pages()
         );
 
         foreach ($pairs as $pair) {
-            $pair['object_type'] = IMAGE_TYPE_NOMENCLATURE_MAIN;
+            $pair['object_type'] = 'nomenclature_main';
             $pair['pair_id'] = 0;
             db_query('INSERT INTO ?:images_links ?e', $pair);
         }
@@ -490,45 +504,96 @@ function fn_manufacturer_remove_old_pages()
 /**
  * Install helper: creates tables (defensive, in case queries section was skipped),
  * migrates data from the old pages architecture, and migrates SEO names.
+ *
+ * The whole body is wrapped in try/catch so that any migration problem can never
+ * abort the addon installation with an Internal Server Error вЂ” CS-Cart requires
+ * install functions to complete successfully.
  */
 function fn_manufacturer_install()
 {
-    fn_manufacturer_migrate_from_pages();
-
-    // Migrate SEO names for the old pages.view dispatch to nomenclature.view
-    if (Registry::get('addons.seo.status') == 'A') {
-        $seo_names = db_get_array(
-            'SELECT * FROM ?:seo_names WHERE type = ?s AND dispatch = ?s',
-            'p',
-            'pages.view'
+    try {
+        // Tables are normally created by the <queries> section of addon.xml.
+        // On a re-install after a failed attempt they could be missing, so we
+        // create them defensively before any data migration.
+        db_query(
+            'CREATE TABLE IF NOT EXISTS `?:nomenclature_nodes` ('
+            . ' `node_id` int(11) unsigned NOT NULL auto_increment,'
+            . ' `parent_id` int(11) unsigned NOT NULL DEFAULT 0,'
+            . ' `id_path` varchar(255) NOT NULL DEFAULT \'\','
+            . ' `company_id` int(11) unsigned NOT NULL DEFAULT 0,'
+            . ' `status` char(1) NOT NULL DEFAULT \'A\','
+            . ' `node_type` char(1) NOT NULL DEFAULT \'M\','
+            . ' `position` int(11) NOT NULL DEFAULT 0,'
+            . ' `seo_name` varchar(255) NOT NULL DEFAULT \'\','
+            . ' `timestamp` int(11) unsigned NOT NULL DEFAULT 0,'
+            . ' PRIMARY KEY (`node_id`), KEY `parent_id` (`parent_id`),'
+            . ' KEY `company_id` (`company_id`), KEY `status` (`status`)'
+            . ') ENGINE=MyISAM DEFAULT CHARSET=utf8'
+        );
+        db_query(
+            'CREATE TABLE IF NOT EXISTS `?:nomenclature_node_descriptions` ('
+            . ' `node_id` int(11) unsigned NOT NULL DEFAULT 0,'
+            . ' `lang_code` char(2) NOT NULL DEFAULT \'\','
+            . ' `name` varchar(255) NOT NULL DEFAULT \'\','
+            . ' `description` text,'
+            . ' PRIMARY KEY (`node_id`, `lang_code`)'
+            . ') ENGINE=MyISAM DEFAULT CHARSET=utf8'
+        );
+        db_query(
+            'CREATE TABLE IF NOT EXISTS `?:nomenclature_links` ('
+            . ' `product_id` int(11) unsigned NOT NULL DEFAULT 0,'
+            . ' `node_id` int(11) unsigned NOT NULL DEFAULT 0,'
+            . ' PRIMARY KEY (`product_id`, `node_id`), KEY `node_id` (`node_id`)'
+            . ') ENGINE=MyISAM DEFAULT CHARSET=utf8'
         );
 
-        foreach ($seo_names as $seo_name) {
-            $page_id = (int) $seo_name['object_id'];
-            $dispatch_updated = db_get_field(
-                'SELECT COUNT(*) FROM ?:seo_names WHERE object_id = ?i AND type = ?s AND dispatch = ?s',
-                $page_id,
-                'n',
-                'nomenclature.view'
-            );
+        fn_manufacturer_migrate_from_pages();
+    } catch (\Throwable $e) {
+        // Never abort the install because of a migration issue.
+    }
 
-            if ($dispatch_updated) {
-                continue;
-            }
-
-            db_query(
-                'UPDATE ?:seo_names SET type = ?s, dispatch = ?s WHERE object_id = ?i AND type = ?s AND dispatch = ?s',
-                'n',
-                'nomenclature.view',
-                $page_id,
+    try {
+        // Migrate SEO names for the old pages.view dispatch to nomenclature.view
+        if (Registry::get('addons.seo.status') == 'A') {
+            $seo_names = db_get_array(
+                'SELECT * FROM ?:seo_names WHERE type = ?s AND dispatch = ?s',
                 'p',
                 'pages.view'
             );
+
+            foreach ($seo_names as $seo_name) {
+                $page_id = (int) $seo_name['object_id'];
+                $dispatch_updated = db_get_field(
+                    'SELECT COUNT(*) FROM ?:seo_names WHERE object_id = ?i AND type = ?s AND dispatch = ?s',
+                    $page_id,
+                    'n',
+                    'nomenclature.view'
+                );
+
+                if ($dispatch_updated) {
+                    continue;
+                }
+
+                db_query(
+                    'UPDATE ?:seo_names SET type = ?s, dispatch = ?s WHERE object_id = ?i AND type = ?s AND dispatch = ?s',
+                    'n',
+                    'nomenclature.view',
+                    $page_id,
+                    'p',
+                    'pages.view'
+                );
+            }
         }
+    } catch (\Throwable $e) {
+        // SEO migration must not abort the install either.
     }
 
-    // Full detach from the core pages entity: drop the old M-pages and helper column.
-    fn_manufacturer_remove_old_pages();
+    try {
+        // Full detach from the core pages entity: drop the old M-pages and helper column.
+        fn_manufacturer_remove_old_pages();
+    } catch (\Throwable $e) {
+        // Cleanup must not abort the install.
+    }
 
     return true;
 }
@@ -546,7 +611,7 @@ function fn_manufacturer_uninstall()
 }
 
 /**
- * Hook: delete_product_post — clean links when a product is removed.
+ * Hook: delete_product_post вЂ” clean links when a product is removed.
  *
  * @param int  $product_id
  * @param bool $product_deleted
@@ -559,7 +624,7 @@ function fn_manufacturer_delete_product_post($product_id, $product_deleted)
 }
 
 /**
- * Hook: get_product_data_post — expose the nodes a product belongs to.
+ * Hook: get_product_data_post вЂ” expose the nodes a product belongs to.
  *
  * @param array  $product_data
  * @param array  $auth
@@ -581,7 +646,7 @@ function fn_manufacturer_get_product_data_post(&$product_data, $auth, $preview, 
 }
 
 /**
- * Hook: get_products — allow filtering products by node through the params.
+ * Hook: get_products вЂ” allow filtering products by node through the params.
  *
  * @param array  $params
  * @param array  $fields
