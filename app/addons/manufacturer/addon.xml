@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<addon scheme="3.0">
+    <id>manufacturer</id>
+    <version>2.3.3</version>
+    <priority>1700</priority>
+    <position>0</position>
+    <status>active</status>
+    <default_language>en</default_language>
+    <supplier>MAN</supplier>
+    <auto_install>MULTIVENDOR,ULTIMATE</auto_install>
+
+    <functions>
+        <item for="install">fn_manufacturer_install</item>
+        <item for="uninstall">fn_manufacturer_uninstall</item>
+    </functions>
+
+    <queries>
+        <item for="demo" type="file">database/demo.sql</item>
+        <item for="demo" type="file" editions="ULTIMATE">database/demo_ult.sql</item>
+        <item for="demo" type="file" editions="MULTIVENDOR">database/demo_mve.sql</item>
+        <item for="demo" type="file" table="page_descriptions" lang="en">database/demo_en.sql</item>
+        <item for="demo" type="file" editions="MULTIVENDOR" table="page_descriptions" lang="en">database/demo_en.mve.sql</item>
+        <item for="demo" type="file" table="page_descriptions" lang="ru">database/demo_ru.sql</item>
+        <item for="demo" type="file" editions="MULTIVENDOR" table="page_descriptions" lang="ru">database/demo_ru.mve.sql</item>
+    </queries>
+</addon>

@@ -1,0 +1,72 @@
+//
+// Manufacturer catalog: responsive rules
+//
+// CS-Cart compiles styles.less and responsive.less separately, so the variables below are
+// repeated on purpose: Less does not share variables between two separately compiled files.
+// Keep this list in sync with the settings block of styles.less.
+//
+
+@manufacturer-gap:             30px;
+@manufacturer-gap-sm:          20px;
+@manufacturer-color-border:    #e6e6e6;
+@manufacturer-thumb-size:      48px;
+@manufacturer-card-img-height: 200px;
+@manufacturer-scroller-height: 150px;
+@manufacturer-title-size:      20px;
+@manufacturer-title-size-sm:   17px;
+
+@media screen and (max-width: 1023px) {
+
+    .ty-manufacturer {
+        margin-left: -@manufacturer-gap-sm / 2;
+        margin-right: -@manufacturer-gap-sm / 2;
+
+        .ty-manufacturer__item {
+            width: 50%;
+        }
+
+        .ty-manufacturer__title {
+            font-size: @manufacturer-title-size-sm;
+        }
+    }
+}
+
+@media screen and (max-width: 767px) {
+
+    .ty-manufacturer {
+
+        .ty-manufacturer__item {
+            width: 100%;
+            margin-bottom: @manufacturer-gap-sm;
+        }
+
+        .ty-manufacturer__img-block img {
+            height: @manufacturer-card-img-height;
+        }
+    }
+
+    .ty-manufacturer-text-links {
+
+        .ty-manufacturer-text-links__item {
+            display: block;
+        }
+
+        .ty-manufacturer-text-links__date {
+            margin: 0 0 3px;
+        }
+    }
+}
+
+@media screen and (max-width: 479px) {
+
+    .ty-manufacturer-recent-posts-scroller {
+
+        .ty-manufacturer-recent-posts-scroller__item {
+            padding: 0 5px;
+        }
+
+        .ty-manufacturer-recent-posts-scroller__img-block img {
+            height: @manufacturer-scroller-height;
+        }
+    }
+}

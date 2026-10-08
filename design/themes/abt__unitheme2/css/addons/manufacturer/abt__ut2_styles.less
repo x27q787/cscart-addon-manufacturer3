@@ -1,0 +1,225 @@
+//
+// Manufacturer catalog styles for UniTheme 2
+//
+// The file is built on the CSS custom properties of the theme, so the catalog follows the
+// palette, the font scale and the density of the active UT2 style: changing the style in
+// Settings -> Appearance is enough, no LESS rebuild of this file is required.
+//
+// No LESS mixin of the theme is used on purpose. Addon styles are compiled on their own in
+// this CS-Cart version, and a mixin that is not injected would break the whole CSS build of
+// the store, while a custom property is resolved by the browser at render time.
+//
+
+// Shared
+.ty-manufacturer__date {
+    margin-top: calc(var(--gap-xs) / 2);
+    color: var(--color-font-lighten);
+    font-size: var(--font-size-small);
+    line-height: 1.4;
+}
+
+// Manufacturer page: the list of child pages
+.ty-manufacturer {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: calc(var(--gap-half) / -2);
+    margin-right: calc(var(--gap-half) / -2);
+
+    .ty-manufacturer__item {
+        box-sizing: border-box;
+        width: 33.3333%;
+        padding: 0 calc(var(--gap-half) / 2);
+        margin-bottom: var(--gap);
+
+        @media only screen and (max-width: 899px) {
+            width: 50%;
+        }
+
+        @media only screen and (max-width: 600px) {
+            width: 100%;
+        }
+    }
+
+    .ty-manufacturer__img-block {
+        margin-bottom: var(--gap-s);
+        overflow: hidden;
+        background: none;
+        border: 1px solid var(--fill-gray);
+        border-radius: var(--border-radius-box);
+
+        a {
+            display: block;
+        }
+
+        img {
+            display: block;
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: opacity 0.2s ease-out;
+        }
+
+        a:hover img {
+            opacity: 0.85;
+        }
+    }
+
+    .ty-manufacturer__title {
+        margin: 0;
+        color: var(--color-font);
+        font-size: var(--font-size-big);
+        font-weight: 400;
+        line-height: 1.3;
+
+        a,
+        a:hover {
+            color: inherit;
+        }
+    }
+
+    .ty-manufacturer__description {
+        margin-top: var(--gap-s);
+        color: var(--color-font);
+        font-size: var(--font-size-medium);
+        line-height: 1.5;
+
+        p {
+            margin: 0 0 var(--gap-s);
+        }
+    }
+
+    .ty-manufacturer__read-more {
+        a,
+        a:hover {
+            color: var(--color-font);
+        }
+
+        a:hover {
+            color: var(--color-base);
+        }
+    }
+}
+
+// The 13 unit grid that holds the page content, keeps the columns from collapsing
+.ty-manufacturer-grid {
+    min-width: 0;
+}
+
+// Sidebox block: recent manufacturers
+.ty-manufacturer-sidebox {
+
+    .ty-manufacturer-sidebox__list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .ty-manufacturer-sidebox__item {
+        padding: var(--gap-xs) 0;
+        border-bottom: 1px solid var(--fill-gray);
+        font-size: var(--font-size-medium);
+        line-height: 1.4;
+
+        &:first-child {
+            padding-top: 0;
+        }
+
+        &:last-child {
+            border-bottom: 0;
+        }
+
+        a,
+        a:hover {
+            color: var(--color-font);
+        }
+
+        a:hover {
+            color: var(--color-base);
+        }
+    }
+}
+
+// Scroller block: manufacturers as image cards
+.ty-manufacturer-recent-posts-scroller {
+
+    .ty-manufacturer-recent-posts-scroller__item {
+        padding: 0 calc(var(--gap-s) / 2);
+        text-align: center;
+    }
+
+    .ty-manufacturer-recent-posts-scroller__img-block {
+        margin-bottom: var(--gap-s);
+        overflow: hidden;
+        border: 1px solid var(--fill-gray);
+        border-radius: var(--border-radius-box);
+
+        a {
+            display: block;
+        }
+
+        img {
+            display: block;
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            transition: opacity 0.2s ease-out;
+        }
+
+        a:hover img {
+            opacity: 0.85;
+        }
+    }
+
+    .owl-item {
+        height: auto;
+    }
+
+    .ty-manufacturer-recent-posts-scroller__item > a,
+    .ty-manufacturer-recent-posts-scroller__item > a:hover {
+        color: var(--color-font);
+        font-size: var(--font-size-medium);
+        line-height: 1.3;
+    }
+
+    .ty-manufacturer__date {
+        margin-top: calc(var(--gap-xs) / 2);
+    }
+}
+
+// Text links block: manufacturers with dates
+.ty-manufacturer-text-links {
+
+    .ty-manufacturer-text-links__item {
+        display: flex;
+        align-items: baseline;
+        padding: var(--gap-xs) 0;
+        border-bottom: 1px solid var(--fill-gray);
+
+        &:last-child {
+            border-bottom: 0;
+        }
+    }
+
+    .ty-manufacturer-text-links__date {
+        flex: 0 0 48px;
+        margin-right: var(--gap-s);
+        color: var(--color-font-lighten);
+        font-size: var(--font-size-small);
+        white-space: nowrap;
+    }
+
+    .ty-manufacturer-text-links__a,
+    .ty-manufacturer-text-links__a:hover {
+        color: var(--color-font);
+        font-size: var(--font-size-medium);
+        line-height: 1.4;
+    }
+
+    .ty-manufacturer-text-links__a:hover {
+        color: var(--color-base);
+    }
+
+    .ty-manufacturer-text-links__button {
+        color: var(--color-font);
+    }
+}

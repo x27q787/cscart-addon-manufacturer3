@@ -1,0 +1,131 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: manufacturer\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language-Team: English\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "Addons::name::manufacturer"
+msgid "Manufacturers"
+msgstr "Manufacturers"
+
+msgctxt "Addons::description::manufacturer"
+msgid "Lets you start a manufacturers catalog easily"
+msgstr "Lets you start a manufacturers catalog easily"
+
+msgctxt "Languages::manufacturer.new"
+msgid "New manufacturer"
+msgstr "New manufacturer"
+
+msgctxt "Languages::manufacturer.editing"
+msgid "Editing manufacturer"
+msgstr "Editing manufacturer"
+
+msgctxt "Languages::manufacturer"
+msgid "Manufacturers"
+msgstr "Manufacturers"
+
+msgctxt "Languages::manufacturer.item"
+msgid "Manufacturer"
+msgstr "Manufacturer"
+
+msgctxt "Languages::manufacturer.list"
+msgid "Manufacturers"
+msgstr "Manufacturers"
+
+msgctxt "Languages::manufacturer.add"
+msgid "Add manufacturer"
+msgstr "Add manufacturer"
+
+msgctxt "Languages::manufacturer.recent_posts"
+msgid "Manufacturers: recent"
+msgstr "Manufacturers: recent"
+
+msgctxt "Languages::manufacturer.recent_posts_scroller"
+msgid "Manufacturers: recent scroller"
+msgstr "Manufacturers: recent scroller"
+
+msgctxt "Languages::manufacturer.view"
+msgid "View manufacturer"
+msgstr "View manufacturer"
+
+msgctxt "Languages::recent_manufacturers"
+msgid "Recent manufacturers"
+msgstr "Recent manufacturers"
+
+msgctxt "Languages::block_manufacturer"
+msgid "Recent manufacturers"
+msgstr "Recent manufacturers"
+
+msgctxt "Languages::block_vendor_manufacturer"
+msgid "Vendor manufacturers"
+msgstr "Vendor manufacturers"
+
+msgctxt "Languages::manufacturer.text_links"
+msgid "Manufacturers: text links"
+msgstr "Manufacturers: text links"
+
+msgctxt "Languages::manufacturer.read_more"
+msgid "Read more"
+msgstr "Read more"
+
+msgctxt "Languages::manufacturer.add_category"
+msgid "Add category"
+msgstr "Add category"
+
+msgctxt "Languages::manufacturer.add_subcategory"
+msgid "Add subcategory"
+msgstr "Add subcategory"
+
+msgctxt "Languages::manufacturer.add_product_group"
+msgid "Add product group"
+msgstr "Add product group"
+
+msgctxt "Languages::manufacturer.category_new"
+msgid "New category"
+msgstr "New category"
+
+msgctxt "Languages::manufacturer.category_editing"
+msgid "Editing category"
+msgstr "Editing category"
+
+msgctxt "Languages::manufacturer.product_group_new"
+msgid "New product group"
+msgstr "New product group"
+
+msgctxt "Languages::manufacturer.product_group_editing"
+msgid "Editing product group"
+msgstr "Editing product group"
+
+msgctxt "Languages::manufacturer_elem_type"
+msgid "Element type"
+msgstr "Element type"
+
+msgctxt "Languages::manufacturer.type_manufacturer"
+msgid "Manufacturer"
+msgstr "Manufacturer"
+
+msgctxt "Languages::manufacturer.type_category"
+msgid "Category"
+msgstr "Category"
+
+msgctxt "Languages::manufacturer.type_product_group"
+msgid "Product group"
+msgstr "Product group"
+
+msgctxt "Languages::manufacturer_description"
+msgid "Manufacturer description"
+msgstr "Manufacturer description"
+
+msgctxt "Languages::ttc_manufacturer_description"
+msgid "Use the &lt;!--CUT--&gt; tag (switch to source code to insert it) to hide part of the description. Only the part above the tag is shown in the list of all manufacturers.<br /><br />Make sure to <strong>close all HTML tags</strong> above the &lt;!--CUT--&gt; tag!"
+msgstr "Use the &lt;!--CUT--&gt; tag (switch to source code to insert it) to hide part of the description. Only the part above the tag is shown in the list of all manufacturers.<br /><br />Make sure to <strong>close all HTML tags</strong> above the &lt;!--CUT--&gt; tag!"
+
+msgctxt "Languages::manufacturer_functionality_notes"
+msgid "<p>Use this page to manage the manufacturers catalog. This is how you should organize the manufacturers:</p><ul><li>A manufacturer is a usual page that has the <b>Root level page</b> as the Parent page.</li><li>Choose the <b>Manufacturers</b> page as the Parent page for your manufacturer pages.</li></ul>"
+msgstr "<p>Use this page to manage the manufacturers catalog. This is how you should organize the manufacturers:</p><ul><li>A manufacturer is a usual page that has the <b>Root level page</b> as the Parent page.</li><li>Choose the <b>Manufacturers</b> page as the Parent page for your manufacturer pages.</li></ul>"
+
+msgctxt "Languages::n_manufacturers"
+msgid "[n] manufacturer|[n] manufacturers"
+msgstr "[n] manufacturer|[n] manufacturers"
