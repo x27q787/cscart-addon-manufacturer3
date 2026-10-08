@@ -4,20 +4,20 @@
 {if $items}
 
 <div class="ty-manufacturer">
-    {foreach from=$items item="page"}
+    {foreach from=$items item="node"}
         <div class="ty-manufacturer__item">
-            <a href="{"pages.view?page_id=`$page.page_id`"|fn_url}">
+            <a href="{"nomenclature.view?node_id=`$node.node_id`"|fn_url}">
                 <div class="ty-manufacturer__img-block">
-                    {include file="common/image.tpl" obj_id=$page.page_id images=$page.main_pair}
+                    {include file="common/image.tpl" obj_id=$node.node_id images=$node.main_pair}
                 </div>
             </a>
             <h3 class="ty-manufacturer__title">
-                <a href="{"pages.view?page_id=`$page.page_id`"|fn_url}">{$page.page}</a>
+                <a href="{"nomenclature.view?node_id=`$node.node_id`"|fn_url}">{$node.name}</a>
             </h3>
-            {if $page.description}
+            {if $node.description}
                 <div class="ty-manufacturer__description">
                     <div class="ty-wysiwyg-content">
-                        <div>{$page.spoiler nofilter}</div>{* spoiler заполняется хуком post_get_pages по <!--CUT--> *}
+                        <div>{$node.description nofilter}</div>{* spoiler заполняется хуком post_get_pages по <!--CUT--> *}
                     </div>
                 </div>
             {/if}

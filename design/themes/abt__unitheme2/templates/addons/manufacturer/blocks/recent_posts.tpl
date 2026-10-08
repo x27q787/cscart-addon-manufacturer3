@@ -4,9 +4,9 @@
 
 <div class="ty-manufacturer-sidebox">
     <ul class="ty-manufacturer-sidebox__list">
-{foreach from=$items item="page"}
+{foreach from=$items item="node"}
         <li class="ty-manufacturer-sidebox__item">
-            <a href="{"pages.view?page_id=`$page.page_id`"|fn_url}">{$page.page}</a>
+            <a href="{"nomenclature.view?node_id=`$node.node_id`"|fn_url}">{$node.name}</a>
         </li>
 {/foreach}
     </ul>

@@ -15,15 +15,9 @@
 if (!defined('BOOTSTRAP')) { die('Access denied'); }
 
 fn_register_hooks(
-    'page_object_by_type',
-    'post_get_pages',
-    'get_page_data',
-    'get_pages_pre',
-    'get_pages',
-    'update_page_post',
-    'delete_page',
-    'clone_page',
-    'sanitize_html',
-    'generate_rss_feed',
-    'storefront_rest_api_set_page_icons'
+    'get_products_pre',
+    'get_products_post',
+    'get_product_data_post',
+    'delete_product_post',
+    'clone_product'
 );

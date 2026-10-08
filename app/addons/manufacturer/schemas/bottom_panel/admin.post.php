@@ -1,26 +1,29 @@
 <?php
 /***************************************************************************
- *                                                                          *
- *   (c) 2004 Vladimir V. Kalynyak, Alexey V. Vinokurov, Ilya M. Shalnev    *
- *                                                                          *
- * This  is  commercial  software,  only  users  who have purchased a valid *
- * license  and  accept  to the terms of the  License Agreement can install *
- * and use this program.                                                    *
- *                                                                          *
- ****************************************************************************
- * PLEASE READ THE FULL TEXT  OF THE SOFTWARE  LICENSE   AGREEMENT  IN  THE *
- * "copyright.txt" FILE PROVIDED WITH THIS DISTRIBUTION PACKAGE.            *
- ****************************************************************************/
+*                                                                          *
+*   (c) 2004 Vladimir V. Kalynyak, Alexey V. Vinokurov, Ilya M. Shalnev    *
+*                                                                          *
+* This  is  commercial  software,  only  users  who have purchased a valid *
+* license  and  accept  to the terms of the  License Agreement can install *
+* and use this program.                                                    *
+*                                                                          *
+****************************************************************************
+* PLEASE READ THE FULL TEXT  OF THE SOFTWARE  LICENSE   AGREEMENT  IN  THE *
+* "copyright.txt" FILE PROVIDED WITH THIS DISTRIBUTION PACKAGE.            *
+****************************************************************************/
 
-$schema['pages.manage&page_type'] = [
+$schema['nomenclature.manage'] = [
     'from' => [
-        'dispatch'  => 'pages.manage',
-        'page_type' => PAGE_TYPE_MANUFACTURER
+        'dispatch'  => 'nomenclature.manage',
     ],
     'to_customer' => [
-        'dispatch' => 'pages.view',
-        'page_id' => function () {
-            return !empty(fn_manufacturer_get_first_page_id()) ? fn_manufacturer_get_first_page_id() : false;
+        'dispatch' => 'nomenclature.view',
+        'node_id' => function () {
+            $first = db_get_field(
+                'SELECT node_id FROM ?:nomenclature_nodes WHERE parent_id = 0 AND status = ?s ORDER BY position ASC LIMIT 1',
+                NOMENCLATURE_STATUS_ACTIVE
+            );
+            return !empty($first) ? (int) $first : false;
         }
     ]
 ];

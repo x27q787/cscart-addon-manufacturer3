@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <addon scheme="3.0">
     <id>manufacturer</id>
-    <version>2.3.3</version>
+    <version>3.0.0</version>
     <priority>1700</priority>
     <position>0</position>
     <status>active</status>
@@ -9,18 +9,77 @@
     <supplier>MAN</supplier>
     <auto_install>MULTIVENDOR,ULTIMATE</auto_install>
 
+    <compatibility>
+        <core_version>
+            <min>4.18.0</min>
+            <max>4.21.5</max>
+        </core_version>
+        <core_edition>ULTIMATE,MULTIVENDOR</core_edition>
+    </compatibility>
+
+    <settings layout="separate">
+        <sections>
+            <section id="general">
+                <items>
+                    <item id="items_per_page">
+                        <type>input</type>
+                        <default_value>20</default_value>
+                    </item>
+                    <item id="frontend_items_per_page">
+                        <type>input</type>
+                        <default_value>12</default_value>
+                    </item>
+                    <item id="show_products_count">
+                        <type>checkbox</type>
+                        <default_value>Y</default_value>
+                    </item>
+                </items>
+            </section>
+        </sections>
+    </settings>
+
     <functions>
         <item for="install">fn_manufacturer_install</item>
         <item for="uninstall">fn_manufacturer_uninstall</item>
     </functions>
 
     <queries>
+        <item for="install">
+CREATE TABLE IF NOT EXISTS `?:nomenclature_nodes` (
+    `node_id` mediumint(8) unsigned NOT NULL auto_increment,
+    `parent_id` mediumint(8) unsigned NOT NULL DEFAULT 0,
+    `id_path` varchar(255) NOT NULL DEFAULT '',
+    `status` char(1) NOT NULL DEFAULT 'A',
+    `position` int(11) NOT NULL DEFAULT 0,
+    `timestamp` int(11) unsigned NOT NULL DEFAULT 0,
+    PRIMARY KEY (`node_id`),
+    KEY `parent_id` (`parent_id`),
+    KEY `status` (`status`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+        </item>
+        <item for="install">
+CREATE TABLE IF NOT EXISTS `?:nomenclature_node_descriptions` (
+    `node_id` mediumint(8) unsigned NOT NULL DEFAULT 0,
+    `lang_code` char(2) NOT NULL DEFAULT '',
+    `name` varchar(255) NOT NULL DEFAULT '',
+    `description` text,
+    `seo_name` varchar(255) NOT NULL DEFAULT '',
+    PRIMARY KEY (`node_id`, `lang_code`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+        </item>
+        <item for="install">
+CREATE TABLE IF NOT EXISTS `?:nomenclature_links` (
+    `link_id` mediumint(8) unsigned NOT NULL auto_increment,
+    `node_id` mediumint(8) unsigned NOT NULL DEFAULT 0,
+    `product_id` int(11) unsigned NOT NULL DEFAULT 0,
+    PRIMARY KEY (`link_id`),
+    UNIQUE KEY `node_product` (`node_id`, `product_id`),
+    KEY `product_id` (`product_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+        </item>
+        <item for="uninstall">DROP TABLE IF EXISTS `?:nomenclature_links`</item>
+        <item for="uninstall">DROP TABLE IF EXISTS `?:nomenclature_node_descriptions`</item>
+        <item for="uninstall">DROP TABLE IF EXISTS `?:nomenclature_nodes`</item>
         <item for="demo" type="file">database/demo.sql</item>
-        <item for="demo" type="file" editions="ULTIMATE">database/demo_ult.sql</item>
-        <item for="demo" type="file" editions="MULTIVENDOR">database/demo_mve.sql</item>
-        <item for="demo" type="file" table="page_descriptions" lang="en">database/demo_en.sql</item>
-        <item for="demo" type="file" editions="MULTIVENDOR" table="page_descriptions" lang="en">database/demo_en.mve.sql</item>
-        <item for="demo" type="file" table="page_descriptions" lang="ru">database/demo_ru.sql</item>
-        <item for="demo" type="file" editions="MULTIVENDOR" table="page_descriptions" lang="ru">database/demo_ru.mve.sql</item>
     </queries>
 </addon>

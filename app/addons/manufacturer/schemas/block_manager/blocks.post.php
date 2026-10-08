@@ -12,13 +12,9 @@
 * "copyright.txt" FILE PROVIDED WITH THIS DISTRIBUTION PACKAGE.            *
 ****************************************************************************/
 
-use Tygh\Registry;
 use Tygh\Enum\ObjectStatuses;
-use Tygh\Enum\YesNo;
 
 defined('BOOTSTRAP') or die('Access denied');
-
-require_once Registry::get('config.dir.addons') . 'manufacturer/schemas/block_manager/blocks.functions.php';
 
 /**
  * @var array<string, array> $schema
@@ -27,49 +23,41 @@ $schema['manufacturer'] = [
     'content' => [
         'items' => [
             'type'           => 'enum',
-            'object'         => 'pages',
-            'items_function' => 'fn_get_pages',
+            'object'         => 'nomenclature_nodes',
+            'items_function' => 'fn_manufacturer_get_nodes',
             'remove_indent'  => true,
             'hide_label'     => true,
             'fillings' => [
                 'manufacturer.recent_posts_scroller' => [
                     'params' => [
                         'simple'     => true,
-                        'sort_by'    => 'timestamp',
-                        'sort_order' => 'desc',
+                        'sort_by'    => 'position',
+                        'sort_order' => 'asc',
                         'status'     => ObjectStatuses::ACTIVE,
-                        'page_type'  => PAGE_TYPE_MANUFACTURER,
-                        'get_image'  => true
+                        'get_tree'   => true,
                     ],
                 ],
                 'manufacturer.recent_posts' => [
                     'params' => [
                         'simple'     => true,
-                        'sort_by'    => 'timestamp',
-                        'sort_order' => 'desc',
+                        'sort_by'    => 'position',
+                        'sort_order' => 'asc',
                         'status'     => ObjectStatuses::ACTIVE,
-                        'page_type'  => PAGE_TYPE_MANUFACTURER,
+                        'get_tree'   => true,
                     ]
                 ],
                 'manufacturer.text_links' => [
                     'params' => [
                         'simple'     => true,
-                        'sort_by'    => 'timestamp',
-                        'sort_order' => 'desc',
+                        'sort_by'    => 'position',
+                        'sort_order' => 'asc',
                         'status'     => ObjectStatuses::ACTIVE,
-                        'page_type'  => PAGE_TYPE_MANUFACTURER,
+                        'get_tree'   => true,
                     ],
                     'settings' => [
-                        'parent_page_id' => [
-                            'type'          => 'picker',
+                        'parent_node_id' => [
+                            'type'          => 'input',
                             'default_value' => '0',
-                            'picker'        => 'pickers/pages/picker.tpl',
-                            'picker_params' => [
-                                'multiple'     => false,
-                                'use_keys'     => YesNo::NO,
-                                'default_name' => __('root_level'),
-                                'extra_url'    => '&page_type=' . PAGE_TYPE_MANUFACTURER
-                            ],
                         ],
                         'limit' => [
                             'type'          => 'input',
@@ -83,44 +71,10 @@ $schema['manufacturer'] = [
     'templates' => 'addons/manufacturer/blocks',
     'wrappers'  => 'blocks/wrappers',
     'cache' => [
-        'update_handlers'  => ['pages', 'page_descriptions'],
-        'request_handlers' => ['%PAGE_ID%', '%COMPANY_ID%']
+        'update_handlers'  => ['nomenclature_nodes', 'nomenclature_node_descriptions', 'nomenclature_links'],
+        'request_handlers' => ['%NODE_ID%', '%COMPANY_ID%']
     ],
     'brief_info_function' => 'fn_block_get_manufacturer_info'
 ];
-
-if (!empty($schema['pages'])) {
-    $schema['pages']['content']['items']['fillings']['manufacturer_children'] = [
-        'params' => [
-            'parent_id' => '%PAGE_ID%',
-            'page_type' => PAGE_TYPE_MANUFACTURER,
-            'status'    => ObjectStatuses::ACTIVE,
-            'sort_by'   => 'position',
-            'sort_order' => 'asc',
-            'get_image' => true,
-            'simple'    => true,
-        ],
-    ];
-
-    $schema['pages']['cache']['request_handlers'][] = '%PAGE_ID%';
-}
-
-if (!empty($schema['rss_feed'])) {
-    $schema['rss_feed']['content']['filling']['values']['manufacturer'] = 'manufacturer.list';
-    $schema['rss_feed']['content']['filling']['values_settings']['manufacturer'] = [
-        'settings' => [
-            'parent_page_id' => [
-                'type'          => 'picker',
-                'default_value' => '0',
-                'picker'        => 'pickers/pages/picker.tpl',
-                'picker_params' => [
-                    'multiple'     => false,
-                    'extra_url'    => '&page_type=' . PAGE_TYPE_MANUFACTURER,
-                    'default_name' => __('root_page'),
-                ],
-            ]
-        ]
-    ];
-}
 
 return $schema;

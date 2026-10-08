@@ -16,19 +16,10 @@ use Tygh\Registry;
 
 $schema['central']['website']['items']['manufacturer'] = [
     'attrs' => [
-        'class'=>'is-addon'
+        'class' => 'is-addon'
     ],
-    'href' => 'pages.manage?get_tree=multi_level&page_type=' . PAGE_TYPE_MANUFACTURER,
-    'alt' => 'pages.manage?get_tree=multi_level&page_type=' . PAGE_TYPE_MANUFACTURER
-        . ',pages.manage?page_type=' . PAGE_TYPE_MANUFACTURER
-        . ',pages.update?page_type=' . PAGE_TYPE_MANUFACTURER
-        . ',pages.update?page_id=%PAGE_ID%&page_type=' . PAGE_TYPE_MANUFACTURER
-        . ',pages.update?page_type=' . PAGE_TYPE_MANUFACTURER . '&parent_id=%PAGE_ID%'
-        . ',pages.add?page_type=' . PAGE_TYPE_MANUFACTURER
-        . ',pages.add?page_type=' . PAGE_TYPE_MANUFACTURER . '&m_type=C'
-        . ',pages.add?page_type=' . PAGE_TYPE_MANUFACTURER . '&m_type=G'
-        . ',pages.update?come_from=' . PAGE_TYPE_MANUFACTURER
-        . ',pages.add?come_from=' . PAGE_TYPE_MANUFACTURER,
+    'href' => 'nomenclature.manage',
+    'alt' => 'nomenclature.manage,nomenclature.update,nomenclature.update?node_id=%NODE_ID%',
     'position' => 150
 ];
 

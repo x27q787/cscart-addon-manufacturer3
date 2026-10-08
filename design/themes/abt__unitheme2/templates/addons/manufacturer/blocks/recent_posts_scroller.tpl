@@ -19,16 +19,16 @@
     <div class="ty-manufacturer-recent-posts-scroller">
         <div id="scroll_list_{$block.block_id}" class="owl-carousel ty-scroller-list">
 
-        {foreach from=$items item="page"}
+        {foreach from=$items item="node"}
             <div class="ty-manufacturer-recent-posts-scroller__item">
 
                 <div class="ty-manufacturer-recent-posts-scroller__img-block">
-                    <a href="{"pages.view?page_id=`$page.page_id`"|fn_url}">
-                        {include file="common/image.tpl" obj_id=$page.page_id images=$page.main_pair}
+                    <a href="{"nomenclature.view?node_id=`$node.node_id`"|fn_url}">
+                        {include file="common/image.tpl" obj_id=$node.node_id images=$node.main_pair}
                     </a>
                 </div>
 
-                <a href="{"pages.view?page_id=`$page.page_id`"|fn_url}">{$page.page}</a>
+                <a href="{"nomenclature.view?node_id=`$node.node_id`"|fn_url}">{$node.name}</a>
 
             </div>
         {/foreach}

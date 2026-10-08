@@ -13,16 +13,9 @@
 ****************************************************************************/
 
 $schema['manufacturer.recent_posts_scroller'] = array(
-    'parent_page_id' => array (
-        'type' => 'picker',
+    'parent_node_id' => array (
+        'type' => 'input',
         'default_value' => '0',
-        'picker' => 'pickers/pages/picker.tpl',
-        'picker_params' => array (
-            'multiple' => false,
-            'use_keys' => 'N',
-            'default_name' => __('root_level'),
-            'extra_url' => "&page_type=" . PAGE_TYPE_MANUFACTURER
-        ),
     ),
     'period' => array (
         'type' => 'selectbox',

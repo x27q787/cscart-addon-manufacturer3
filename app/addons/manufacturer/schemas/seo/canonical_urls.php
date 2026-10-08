@@ -12,10 +12,10 @@
 * "copyright.txt" FILE PROVIDED WITH THIS DISTRIBUTION PACKAGE.            *
 ****************************************************************************/
 
-$schema['pages']['view'] = array(
-    'base_url' => 'pages.view?page_id=[page_id]',
+$schema['nomenclature']['view'] = array(
+    'base_url' => 'nomenclature.view?node_id=[node_id]',
     'request_handlers' => array(
-        'page_id' => true
+        'node_id' => true
     ),
     'search' => true
 );

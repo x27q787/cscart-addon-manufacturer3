@@ -11,32 +11,100 @@ msgid "Manufacturers"
 msgstr "Производители"
 
 msgctxt "Addons::description::manufacturer"
-msgid "Lets you start a manufacturers catalog easily"
-msgstr "Позволяет легко начать каталог производителей"
+msgid "Independent nomenclature tree: manufacturers, categories and product groups with dynamic feature tables"
+msgstr "Независимое дерево номенклатуры: производители, категории и группы товаров с динамическими таблицами характеристик"
 
-msgctxt "Languages::manufacturer.new"
-msgid "New manufacturer"
-msgstr "Новый производитель"
+msgctxt "SettingsSections::manufacturer::general"
+msgid "General"
+msgstr "Основные"
 
-msgctxt "Languages::manufacturer.editing"
-msgid "Editing manufacturer"
-msgstr "Редактирование производителя"
+msgctxt "SettingsOptions::manufacturer::items_per_page"
+msgid "Nodes per page (admin)"
+msgstr "Узлов на странице (админка)"
+
+msgctxt "SettingsOptions::manufacturer::frontend_items_per_page"
+msgid "Products per page (storefront)"
+msgstr "Товаров на странице (витрина)"
+
+msgctxt "SettingsOptions::manufacturer::show_products_count"
+msgid "Show product counts"
+msgstr "Показывать количество товаров"
 
 msgctxt "Languages::manufacturer"
 msgid "Manufacturers"
 msgstr "Производители"
 
-msgctxt "Languages::manufacturer.item"
-msgid "Manufacturer"
-msgstr "Производитель"
+msgctxt "Languages::manufacturer.nodes"
+msgid "Nomenclature nodes"
+msgstr "Узлы номенклатуры"
 
-msgctxt "Languages::manufacturer.list"
-msgid "Manufacturers"
-msgstr "Производители"
+msgctxt "Languages::manufacturer.node"
+msgid "Node"
+msgstr "Узел"
 
-msgctxt "Languages::manufacturer.add"
-msgid "Add manufacturer"
-msgstr "Добавить производителя"
+msgctxt "Languages::manufacturer.add_node"
+msgid "Add node"
+msgstr "Добавить узел"
+
+msgctxt "Languages::manufacturer.editing_node"
+msgid "Editing node"
+msgstr "Редактирование узла"
+
+msgctxt "Languages::manufacturer.adding_node"
+msgid "Adding node"
+msgstr "Добавление узла"
+
+msgctxt "Languages::manufacturer.node_name"
+msgid "Node name"
+msgstr "Название узла"
+
+msgctxt "Languages::manufacturer.parent_node"
+msgid "Parent node"
+msgstr "Родительский узел"
+
+msgctxt "Languages::manufacturer.root_level"
+msgid "Root level"
+msgstr "Корневой уровень"
+
+msgctxt "Languages::manufacturer.seo_name"
+msgid "SEO name (slug)"
+msgstr "SEO-имя (ЧПУ)"
+
+msgctxt "Languages::manufacturer.seo_name_hint"
+msgid "Leave empty to use the node id in the URL"
+msgstr "Оставьте пустым, чтобы в URL использовался идентификатор узла"
+
+msgctxt "Languages::manufacturer.image"
+msgid "Node image"
+msgstr "Изображение узла"
+
+msgctxt "Languages::manufacturer.linked_products"
+msgid "Linked products"
+msgstr "Привязанные товары"
+
+msgctxt "Languages::manufacturer.products"
+msgid "Products"
+msgstr "Товары"
+
+msgctxt "Languages::manufacturer.child_nodes"
+msgid "Subcategories"
+msgstr "Подкатегории"
+
+msgctxt "Languages::manufacturer.no_products"
+msgid "There are no products in this group yet"
+msgstr "В этой группе пока нет товаров"
+
+msgctxt "Languages::manufacturer.node_saved"
+msgid "Node saved"
+msgstr "Узел сохранён"
+
+msgctxt "Languages::manufacturer.node_deleted"
+msgid "Node deleted"
+msgstr "Узел удалён"
+
+msgctxt "Languages::manufacturer.nodes_deleted"
+msgid "Nodes deleted"
+msgstr "Узлы удалены"
 
 msgctxt "Languages::manufacturer.recent_posts"
 msgid "Manufacturers: recent"
@@ -46,85 +114,21 @@ msgctxt "Languages::manufacturer.recent_posts_scroller"
 msgid "Manufacturers: recent scroller"
 msgstr "Производители: прокрутка последних"
 
-msgctxt "Languages::manufacturer.view"
-msgid "View manufacturer"
-msgstr "Страница производителя"
-
-msgctxt "Languages::recent_manufacturers"
-msgid "Recent manufacturers"
-msgstr "Последние производители"
-
-msgctxt "Languages::block_manufacturer"
-msgid "Recent manufacturers"
-msgstr "Последние производители"
-
-msgctxt "Languages::block_vendor_manufacturer"
-msgid "Vendor manufacturers"
-msgstr "Производители продавца"
-
 msgctxt "Languages::manufacturer.text_links"
 msgid "Manufacturers: text links"
 msgstr "Производители: текстовые ссылки"
 
-msgctxt "Languages::manufacturer.read_more"
-msgid "Read more"
-msgstr "Подробнее"
+msgctxt "Languages::manufacturer_children"
+msgid "Child nodes of manufacturer"
+msgstr "Дочерние узлы производителя"
 
-msgctxt "Languages::manufacturer.add_category"
-msgid "Add category"
-msgstr "Добавить категорию"
+msgctxt "Languages::products_count"
+msgid "Products count"
+msgstr "Кол-во товаров"
 
-msgctxt "Languages::manufacturer.add_subcategory"
-msgid "Add subcategory"
-msgstr "Добавить подкатегорию"
-
-msgctxt "Languages::manufacturer.add_product_group"
-msgid "Add product group"
-msgstr "Добавить группу товаров"
-
-msgctxt "Languages::manufacturer.category_new"
-msgid "New category"
-msgstr "Новая категория"
-
-msgctxt "Languages::manufacturer.category_editing"
-msgid "Editing category"
-msgstr "Редактирование категории"
-
-msgctxt "Languages::manufacturer.product_group_new"
-msgid "New product group"
-msgstr "Новая группа товаров"
-
-msgctxt "Languages::manufacturer.product_group_editing"
-msgid "Editing product group"
-msgstr "Редактирование группы товаров"
-
-msgctxt "Languages::manufacturer_elem_type"
-msgid "Element type"
-msgstr "Тип элемента"
-
-msgctxt "Languages::manufacturer.type_manufacturer"
-msgid "Manufacturer"
-msgstr "Производитель"
-
-msgctxt "Languages::manufacturer.type_category"
-msgid "Category"
-msgstr "Категория"
-
-msgctxt "Languages::manufacturer.type_product_group"
-msgid "Product group"
-msgstr "Группа товаров"
-
-msgctxt "Languages::manufacturer_description"
-msgid "Manufacturer description"
-msgstr "Описание производителя"
-
-msgctxt "Languages::ttc_manufacturer_description"
-msgid "Use the &lt;!--CUT--&gt; tag (switch to source code to insert it) to hide part of the description. Only the part above the tag is shown in the list of all manufacturers.<br /><br />Make sure to <strong>close all HTML tags</strong> above the &lt;!--CUT--&gt; tag!"
-msgstr "Используйте тег &lt;!--CUT--&gt; (вводите его в режиме исходного кода в редакторе), чтобы скрыть часть описания. В списке производителей будет отображаться только часть текста выше тега.<br /><br /><strong>Все HTML-теги над &lt;!--CUT--&gt; должны быть закрыты!</strong>"
-
-msgctxt "Languages::manufacturer_functionality_notes"
-msgid "<p>Use this page to manage the manufacturers catalog. This is how you should organize the manufacturers:</p><ul><li>A manufacturer is a usual page that has the <b>Root level page</b> as the Parent page.</li><li>Choose the <b>Manufacturers</b> page as the Parent page for your manufacturer pages.</li></ul>"
-msgstr "<p>Управляйте каталогом производителей на этой странице. Вот как нужно организовывать производителей:</p><ul><li>Производитель — это обычная страница, у которой в качестве родительской — <b>Корневая страница</b>.</li><li>Когда создаете производителя, выбирайте в качестве родительской страницы — <b>Производители</b>.</li></ul>"
+msgctxt "Languages::out_of_stock"
+msgid "Out of stock"
+msgstr "Нет в наличии"
 
 msgctxt "Languages::n_manufacturers"
 msgid "[n] manufacturer|[n] manufacturers"

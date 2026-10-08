@@ -14,6 +14,6 @@
 
 if (!defined('BOOTSTRAP')) { die('Access denied'); }
 
-fn_define('PAGE_TYPE_MANUFACTURER', 'M');
-fn_define('MANUFACTURER_CUT', '<!--CUT-->');
 fn_define('IMAGE_TYPE_MANUFACTURER_PAGE', 'manufacturer_page');
+fn_define('NOMENCLATURE_STATUS_ACTIVE', 'A');
+fn_define('NOMENCLATURE_STATUS_DISABLED', 'D');

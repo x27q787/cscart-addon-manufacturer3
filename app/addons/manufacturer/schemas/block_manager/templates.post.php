@@ -17,7 +17,7 @@ $schema['addons/manufacturer/blocks/recent_posts_scroller.tpl'] = array (
     'params' => array (
         'plain' => true,
         'request' => array (
-            'manufacturer_page_id' => '%PAGE_ID%',
+            'node_id' => '%NODE_ID%',
         ),
     ),
     'settings' => array (
@@ -54,7 +54,7 @@ $schema['addons/manufacturer/blocks/recent_posts.tpl'] = array (
     'params' => array (
         'plain' => true,
         'request' => array (
-            'manufacturer_page_id' => '%PAGE_ID%',
+            'node_id' => '%NODE_ID%',
         ),
     )
 );
@@ -67,7 +67,7 @@ $schema['addons/manufacturer/blocks/text_links.tpl'] = array (
 );
 
 $schema['addons/manufacturer/blocks/manufacturer_grid.tpl'] = array (
-    'fillings' => array('manufacturer_children'),
+    'fillings' => array('manufacturer.recent_posts'),
     'params' => array (
         'plain' => true,
         'get_image' => true

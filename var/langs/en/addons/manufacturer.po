@@ -11,32 +11,100 @@ msgid "Manufacturers"
 msgstr "Manufacturers"
 
 msgctxt "Addons::description::manufacturer"
-msgid "Lets you start a manufacturers catalog easily"
-msgstr "Lets you start a manufacturers catalog easily"
+msgid "Independent nomenclature tree: manufacturers, categories and product groups with dynamic feature tables"
+msgstr "Independent nomenclature tree: manufacturers, categories and product groups with dynamic feature tables"
 
-msgctxt "Languages::manufacturer.new"
-msgid "New manufacturer"
-msgstr "New manufacturer"
+msgctxt "SettingsSections::manufacturer::general"
+msgid "General"
+msgstr "General"
 
-msgctxt "Languages::manufacturer.editing"
-msgid "Editing manufacturer"
-msgstr "Editing manufacturer"
+msgctxt "SettingsOptions::manufacturer::items_per_page"
+msgid "Nodes per page (admin)"
+msgstr "Nodes per page (admin)"
+
+msgctxt "SettingsOptions::manufacturer::frontend_items_per_page"
+msgid "Products per page (storefront)"
+msgstr "Products per page (storefront)"
+
+msgctxt "SettingsOptions::manufacturer::show_products_count"
+msgid "Show product counts"
+msgstr "Show product counts"
 
 msgctxt "Languages::manufacturer"
 msgid "Manufacturers"
 msgstr "Manufacturers"
 
-msgctxt "Languages::manufacturer.item"
-msgid "Manufacturer"
-msgstr "Manufacturer"
+msgctxt "Languages::manufacturer.nodes"
+msgid "Nomenclature nodes"
+msgstr "Nomenclature nodes"
 
-msgctxt "Languages::manufacturer.list"
-msgid "Manufacturers"
-msgstr "Manufacturers"
+msgctxt "Languages::manufacturer.node"
+msgid "Node"
+msgstr "Node"
 
-msgctxt "Languages::manufacturer.add"
-msgid "Add manufacturer"
-msgstr "Add manufacturer"
+msgctxt "Languages::manufacturer.add_node"
+msgid "Add node"
+msgstr "Add node"
+
+msgctxt "Languages::manufacturer.editing_node"
+msgid "Editing node"
+msgstr "Editing node"
+
+msgctxt "Languages::manufacturer.adding_node"
+msgid "Adding node"
+msgstr "Adding node"
+
+msgctxt "Languages::manufacturer.node_name"
+msgid "Node name"
+msgstr "Node name"
+
+msgctxt "Languages::manufacturer.parent_node"
+msgid "Parent node"
+msgstr "Parent node"
+
+msgctxt "Languages::manufacturer.root_level"
+msgid "Root level"
+msgstr "Root level"
+
+msgctxt "Languages::manufacturer.seo_name"
+msgid "SEO name (slug)"
+msgstr "SEO name (slug)"
+
+msgctxt "Languages::manufacturer.seo_name_hint"
+msgid "Leave empty to use the node id in the URL"
+msgstr "Leave empty to use the node id in the URL"
+
+msgctxt "Languages::manufacturer.image"
+msgid "Node image"
+msgstr "Node image"
+
+msgctxt "Languages::manufacturer.linked_products"
+msgid "Linked products"
+msgstr "Linked products"
+
+msgctxt "Languages::manufacturer.products"
+msgid "Products"
+msgstr "Products"
+
+msgctxt "Languages::manufacturer.child_nodes"
+msgid "Subcategories"
+msgstr "Subcategories"
+
+msgctxt "Languages::manufacturer.no_products"
+msgid "There are no products in this group yet"
+msgstr "There are no products in this group yet"
+
+msgctxt "Languages::manufacturer.node_saved"
+msgid "Node saved"
+msgstr "Node saved"
+
+msgctxt "Languages::manufacturer.node_deleted"
+msgid "Node deleted"
+msgstr "Node deleted"
+
+msgctxt "Languages::manufacturer.nodes_deleted"
+msgid "Nodes deleted"
+msgstr "Nodes deleted"
 
 msgctxt "Languages::manufacturer.recent_posts"
 msgid "Manufacturers: recent"
@@ -46,85 +114,21 @@ msgctxt "Languages::manufacturer.recent_posts_scroller"
 msgid "Manufacturers: recent scroller"
 msgstr "Manufacturers: recent scroller"
 
-msgctxt "Languages::manufacturer.view"
-msgid "View manufacturer"
-msgstr "View manufacturer"
-
-msgctxt "Languages::recent_manufacturers"
-msgid "Recent manufacturers"
-msgstr "Recent manufacturers"
-
-msgctxt "Languages::block_manufacturer"
-msgid "Recent manufacturers"
-msgstr "Recent manufacturers"
-
-msgctxt "Languages::block_vendor_manufacturer"
-msgid "Vendor manufacturers"
-msgstr "Vendor manufacturers"
-
 msgctxt "Languages::manufacturer.text_links"
 msgid "Manufacturers: text links"
 msgstr "Manufacturers: text links"
 
-msgctxt "Languages::manufacturer.read_more"
-msgid "Read more"
-msgstr "Read more"
+msgctxt "Languages::manufacturer_children"
+msgid "Child nodes of manufacturer"
+msgstr "Child nodes of manufacturer"
 
-msgctxt "Languages::manufacturer.add_category"
-msgid "Add category"
-msgstr "Add category"
+msgctxt "Languages::products_count"
+msgid "Products count"
+msgstr "Products count"
 
-msgctxt "Languages::manufacturer.add_subcategory"
-msgid "Add subcategory"
-msgstr "Add subcategory"
-
-msgctxt "Languages::manufacturer.add_product_group"
-msgid "Add product group"
-msgstr "Add product group"
-
-msgctxt "Languages::manufacturer.category_new"
-msgid "New category"
-msgstr "New category"
-
-msgctxt "Languages::manufacturer.category_editing"
-msgid "Editing category"
-msgstr "Editing category"
-
-msgctxt "Languages::manufacturer.product_group_new"
-msgid "New product group"
-msgstr "New product group"
-
-msgctxt "Languages::manufacturer.product_group_editing"
-msgid "Editing product group"
-msgstr "Editing product group"
-
-msgctxt "Languages::manufacturer_elem_type"
-msgid "Element type"
-msgstr "Element type"
-
-msgctxt "Languages::manufacturer.type_manufacturer"
-msgid "Manufacturer"
-msgstr "Manufacturer"
-
-msgctxt "Languages::manufacturer.type_category"
-msgid "Category"
-msgstr "Category"
-
-msgctxt "Languages::manufacturer.type_product_group"
-msgid "Product group"
-msgstr "Product group"
-
-msgctxt "Languages::manufacturer_description"
-msgid "Manufacturer description"
-msgstr "Manufacturer description"
-
-msgctxt "Languages::ttc_manufacturer_description"
-msgid "Use the &lt;!--CUT--&gt; tag (switch to source code to insert it) to hide part of the description. Only the part above the tag is shown in the list of all manufacturers.<br /><br />Make sure to <strong>close all HTML tags</strong> above the &lt;!--CUT--&gt; tag!"
-msgstr "Use the &lt;!--CUT--&gt; tag (switch to source code to insert it) to hide part of the description. Only the part above the tag is shown in the list of all manufacturers.<br /><br />Make sure to <strong>close all HTML tags</strong> above the &lt;!--CUT--&gt; tag!"
-
-msgctxt "Languages::manufacturer_functionality_notes"
-msgid "<p>Use this page to manage the manufacturers catalog. This is how you should organize the manufacturers:</p><ul><li>A manufacturer is a usual page that has the <b>Root level page</b> as the Parent page.</li><li>Choose the <b>Manufacturers</b> page as the Parent page for your manufacturer pages.</li></ul>"
-msgstr "<p>Use this page to manage the manufacturers catalog. This is how you should organize the manufacturers:</p><ul><li>A manufacturer is a usual page that has the <b>Root level page</b> as the Parent page.</li><li>Choose the <b>Manufacturers</b> page as the Parent page for your manufacturer pages.</li></ul>"
+msgctxt "Languages::out_of_stock"
+msgid "Out of stock"
+msgstr "Out of stock"
 
 msgctxt "Languages::n_manufacturers"
 msgid "[n] manufacturer|[n] manufacturers"
