@@ -12,20 +12,21 @@
 * "copyright.txt" FILE PROVIDED WITH THIS DISTRIBUTION PACKAGE.            *
 ****************************************************************************/
 
-$schema['nomenclature.manage'] = [
-    'from' => [
-        'dispatch'  => 'nomenclature.manage',
-    ],
-    'to_customer' => [
-        'dispatch' => 'nomenclature.view',
-        'node_id' => function () {
-            $first = db_get_field(
-                'SELECT node_id FROM ?:nomenclature_nodes WHERE parent_id = 0 AND status = ?s ORDER BY position ASC LIMIT 1',
-                NOMENCLATURE_STATUS_ACTIVE
-            );
-            return !empty($first) ? (int) $first : false;
-        }
-    ]
-];
+/**
+ * Registers nomenclature nodes as dynamic objects for Block Manager,
+ * so blocks can have node-specific content.
+ *
+ * @var array $schema
+ */
+
+$schema['nomenclature_nodes'] = array(
+    'admin_dispatch'    => 'nomenclature.update',
+    'customer_dispatch' => 'nomenclature.view',
+    'key'               => 'node_id',
+    'picker'            => 'addons/manufacturer/pickers/nodes/picker.tpl',
+    'picker_params'     => array(
+        'type' => 'links',
+    ),
+);
 
 return $schema;

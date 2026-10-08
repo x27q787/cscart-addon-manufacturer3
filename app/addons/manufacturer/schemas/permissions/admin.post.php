@@ -12,25 +12,8 @@
 * "copyright.txt" FILE PROVIDED WITH THIS DISTRIBUTION PACKAGE.            *
 ****************************************************************************/
 
-use Tygh\Tools\Url;
-
-$schema['nomenclature.view'] = [
-    'from' => [
-        'dispatch' => 'nomenclature.view',
-        'node_id'
-    ],
-    'to_admin' => function (Url $url) {
-        $node_id = $url->getQueryParam('node_id');
-
-        if (empty($node_id)) {
-            return false;
-        }
-
-        return [
-            'dispatch' => 'nomenclature.update',
-            'node_id' => '%node_id%'
-        ];
-    }
-];
+$schema['nomenclature'] = array (
+    'permissions' => 'manage_nomenclature',
+);
 
 return $schema;

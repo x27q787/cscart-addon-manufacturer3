@@ -13,598 +13,596 @@
 ****************************************************************************/
 
 use Tygh\Registry;
-use Tygh\Tools\Url;
 
 if (!defined('BOOTSTRAP')) { die('Access denied'); }
 
-/**
- * Installs the addon: ensures the nomenclature_links table is indexed by product_id.
- *
- * @return bool
- */
-function fn_manufacturer_install()
-{
-    $is_index_exists = db_get_row("SHOW INDEX FROM ?:nomenclature_links WHERE Key_name = 'product_id'");
-    if (empty($is_index_exists)) {
-        db_query("ALTER TABLE ?:nomenclature_links ADD INDEX product_id (`product_id`)");
-    }
-
-    return true;
-}
+define('NOMENCLATURE_NODE_TYPE_MANUFACTURER', 'M');
+define('NOMENCLATURE_NODE_TYPE_CATEGORY', 'C');
+define('NOMENCLATURE_NODE_TYPE_GROUP', 'G');
 
 /**
- * Uninstalls the addon. Nomenclature tables are dropped by addon.xml queries.
- *
- * @return bool
- */
-function fn_manufacturer_uninstall()
-{
-    return true;
-}
-
-/**
- * Returns a list of nomenclature nodes (tree).
- *
- * @param array $params  Search params
- * @param int   $items_per_page  Page size (0 = all)
- * @param string $lang_code
- *
- * @return array [nodes (flat list, may contain 'children'), total_count, pagination]
- */
-function fn_manufacturer_get_nodes($params = [], $items_per_page = 0, $lang_code = CART_LANGUAGE)
-{
-    $params = array_merge([
-        'parent_id' => 0,
-        'node_id'   => 0,
-        'status'    => '',
-        'get_tree'  => false,
-        'page'      => 1,
-        'sort_by'   => 'position',
-        'sort_order'=> 'asc',
-    ], $params);
-
-    $condition = '1=1';
-    $join = db_quote(
-        ' LEFT JOIN ?:nomenclature_node_descriptions as ?:nomenclature_node_descriptions'
-        . ' ON ?:nomenclature_node_descriptions.node_id = ?:nomenclature_nodes.node_id'
-        . ' AND ?:nomenclature_node_descriptions.lang_code = ?s',
-        $lang_code
-    );
-
-    if (!empty($params['node_id'])) {
-        $condition .= db_quote(' AND ?:nomenclature_nodes.node_id = ?i', $params['node_id']);
-    }
-    if (!empty($params['parent_id'])) {
-        $condition .= db_quote(' AND ?:nomenclature_nodes.parent_id = ?i', $params['parent_id']);
-    }
-    if (!empty($params['status'])) {
-        $condition .= db_quote(' AND ?:nomenclature_nodes.status = ?s', $params['status']);
-    }
-
-    $sortings = [
-        'position' => '?:nomenclature_nodes.position',
-        'name'     => '?:nomenclature_node_descriptions.name',
-        'timestamp'=> '?:nomenclature_nodes.timestamp',
-    ];
-    $sort_by = isset($sortings[$params['sort_by']]) ? $sortings[$params['sort_by']] : $sortings['position'];
-    $sort_order = strtoupper($params['sort_order']) === 'DESC' ? 'DESC' : 'ASC';
-
-    $limit = '';
-    $total = 0;
-    if ($items_per_page > 0) {
-        $total = db_get_field('SELECT COUNT(*) FROM ?:nomenclature_nodes WHERE ?p', $condition);
-        $limit = db_paginate($params['page'], $items_per_page);
-    }
-
-    $nodes = db_get_hash_array(
-        'SELECT ?:nomenclature_nodes.*, ?:nomenclature_node_descriptions.name,'
-        . ' ?:nomenclature_node_descriptions.description, ?:nomenclature_node_descriptions.seo_name'
-        . ' FROM ?:nomenclature_nodes ?p WHERE ?p ORDER BY ?p ?p',
-        'node_id', $join, $condition, "$sort_by $sort_order", $limit
-    );
-
-    if (!empty($nodes)) {
-        $node_ids = array_keys($nodes);
-
-        $counts = db_get_hash_single_array(
-            'SELECT node_id, COUNT(*) as cnt FROM ?:nomenclature_links'
-            . ' WHERE node_id IN (?n) GROUP BY node_id',
-            ['node_id', 'cnt'], $node_ids
-        );
-        foreach ($nodes as $node_id => $node) {
-            $nodes[$node_id]['products_count'] = !empty($counts[$node_id]) ? (int) $counts[$node_id] : 0;
-        }
-
-        if (!empty($params['get_image'])) {
-            $images = fn_get_image_pairs($node_ids, IMAGE_TYPE_MANUFACTURER_PAGE, 'M', true, false, $lang_code);
-            foreach ($node_ids as $node_id) {
-                $nodes[$node_id]['main_pair'] = !empty($images[$node_id]) ? reset($images[$node_id]) : [];
-            }
-        }
-    }
-
-    if (!empty($params['get_tree'])) {
-        $nodes = fn_manufacturer_build_tree($nodes, (int) $params['parent_id']);
-    }
-
-    return [$nodes, $total, fn_paginate($total, $params['page'], $items_per_page)];
-}
-
-/**
- * Builds a nested tree from a flat node list.
- *
- * @param array $nodes  Flat list keyed by node_id
- * @param int   $root_id
- *
- * @return array
- */
-function fn_manufacturer_build_tree($nodes, $root_id = 0)
-{
-    $tree = [];
-    foreach ($nodes as $node_id => $node) {
-        $node['children'] = [];
-        $nodes[$node_id] = $node;
-    }
-    foreach ($nodes as $node_id => $node) {
-        if ((int) $node['parent_id'] === (int) $root_id) {
-            $tree[$node_id] = $node;
-        } else {
-            if (isset($nodes[$node['parent_id']])) {
-                $nodes[$node['parent_id']]['children'][$node_id] = $node;
-            } else {
-                $tree[$node_id] = $node;
-            }
-        }
-    }
-    return $tree;
-}
-
-/**
- * Returns a single nomenclature node with descriptions.
+ * Returns full node data by node_id (with descriptions for the given language).
  *
  * @param int    $node_id
  * @param string $lang_code
  *
- * @return array|false
+ * @return array
  */
 function fn_manufacturer_get_node_data($node_id, $lang_code = CART_LANGUAGE)
 {
     $node = db_get_row(
-        'SELECT ?:nomenclature_nodes.*, ?:nomenclature_node_descriptions.name,'
-        . ' ?:nomenclature_node_descriptions.description, ?:nomenclature_node_descriptions.seo_name'
+        'SELECT ?:nomenclature_nodes.*, ?:nomenclature_node_descriptions.name, ?:nomenclature_node_descriptions.description'
         . ' FROM ?:nomenclature_nodes'
         . ' LEFT JOIN ?:nomenclature_node_descriptions'
-        . ' ON ?:nomenclature_node_descriptions.node_id = ?:nomenclature_nodes.node_id'
-        . ' AND ?:nomenclature_node_descriptions.lang_code = ?s'
+            . ' ON ?:nomenclature_node_descriptions.node_id = ?:nomenclature_nodes.node_id'
+            . ' AND ?:nomenclature_node_descriptions.lang_code = ?s'
         . ' WHERE ?:nomenclature_nodes.node_id = ?i',
-        $lang_code, $node_id
+        $lang_code,
+        $node_id
     );
 
-    if (empty($node)) {
-        return false;
+    if (!empty($node)) {
+        $node['main_pair'] = fn_get_image_pairs($node_id, IMAGE_TYPE_NOMENCLATURE_MAIN, 'M', true, false, $lang_code);
+        $node['has_children'] = (bool) db_get_field(
+            'SELECT COUNT(*) FROM ?:nomenclature_nodes WHERE parent_id = ?i',
+            $node_id
+        );
     }
-
-    $node['main_pair'] = fn_get_image_pairs($node_id, IMAGE_TYPE_MANUFACTURER_PAGE, 'M', true, false, $lang_code);
 
     return $node;
 }
 
 /**
- * Returns the list of product ids linked to a node (or to a node subtree).
+ * Returns the tree of nomenclature nodes.
  *
- * @param int   $node_id
- * @param bool  $recursive  include products of child nodes
+ * @param array $params
+ * @param int   $parent_id
  *
- * @return int[]
+ * @return array
  */
-function fn_manufacturer_get_node_product_ids($node_id, $recursive = false)
+function fn_manufacturer_get_nodes_tree($params = [], $parent_id = 0)
 {
-    $node_ids = [$node_id];
-    if ($recursive) {
-        $node_ids = array_merge($node_ids, fn_manufacturer_get_child_node_ids($node_id));
+    $lang_code = !empty($params['lang_code']) ? $params['lang_code'] : CART_LANGUAGE;
+
+    $where = '?:nomenclature_nodes.parent_id = ?i';
+    $where_params = [(int) $parent_id];
+
+    if (!empty($params['status'])) {
+        $where .= ' AND ?:nomenclature_nodes.status = ?s';
+        $where_params[] = $params['status'];
     }
 
-    return db_get_fields(
-        'SELECT product_id FROM ?:nomenclature_links WHERE node_id IN (?n)',
-        $node_ids
-    );
+    if (fn_allowed_for('MULTIVENDOR') && !empty($params['company_id'])) {
+        $where .= ' AND ?:nomenclature_nodes.company_id = ?i';
+        $where_params[] = (int) $params['company_id'];
+    }
+
+    $query = 'SELECT ?:nomenclature_nodes.*, ?:nomenclature_node_descriptions.name, ?:nomenclature_node_descriptions.description'
+        . ' FROM ?:nomenclature_nodes'
+        . ' LEFT JOIN ?:nomenclature_node_descriptions'
+            . ' ON ?:nomenclature_node_descriptions.node_id = ?:nomenclature_nodes.node_id'
+            . ' AND ?:nomenclature_node_descriptions.lang_code = ?s'
+        . ' WHERE ' . $where
+        . ' ORDER BY ?:nomenclature_nodes.position ASC, ?:nomenclature_node_descriptions.name ASC';
+
+    $nodes = db_get_hash_array($query, 'node_id', $lang_code, ...$where_params);
+
+    foreach ($nodes as $node_id => $node) {
+        $child_params = $params;
+        $nodes[$node_id]['children'] = fn_manufacturer_get_nodes_tree($child_params, $node_id);
+        $nodes[$node_id]['has_children'] = !empty($nodes[$node_id]['children']);
+    }
+
+    return $nodes;
 }
 
 /**
- * Returns all descendant node ids of a node.
+ * Updates (creates or edits) a nomenclature node.
  *
- * @param int $node_id
- *
- * @return int[]
- */
-function fn_manufacturer_get_child_node_ids($node_id)
-{
-    $node_ids = db_get_fields(
-        'SELECT node_id FROM ?:nomenclature_nodes WHERE id_path LIKE ?l',
-        '%/' . (int) $node_id . '/%'
-    );
-    $direct = db_get_fields(
-        'SELECT node_id FROM ?:nomenclature_nodes WHERE parent_id = ?i',
-        $node_id
-    );
-
-    return array_values(array_unique(array_merge($node_ids, $direct)));
-}
-
-/**
- * Creates or updates a nomenclature node.
- *
- * @param int   $node_id     0 for create
- * @param array $node_data   Node data incl. 'descriptions' (lang_code => fields)
- * @param array $product_ids Product ids to link (many-to-many)
+ * @param array $node_data
+ * @param int   $node_id
+ * @param string $lang_code
  *
  * @return int node_id
  */
-function fn_manufacturer_update_node($node_id, $node_data, $product_ids = [])
+function fn_manufacturer_update_node($node_data, $node_id = 0, $lang_code = DESCR_SL)
 {
     $node_data = array_merge([
         'parent_id' => 0,
-        'status'    => NOMENCLATURE_STATUS_ACTIVE,
+        'status'    => 'A',
+        'node_type' => NOMENCLATURE_NODE_TYPE_MANUFACTURER,
         'position'  => 0,
-    ], $node_data);
+    ], (array) $node_data);
 
     $node_id = (int) $node_id;
+
+    $node_table_data = [
+        'parent_id' => (int) $node_data['parent_id'],
+        'status'    => !empty($node_data['status']) ? $node_data['status'] : 'A',
+        'node_type' => !empty($node_data['node_type']) ? $node_data['node_type'] : NOMENCLATURE_NODE_TYPE_MANUFACTURER,
+        'position'  => (int) $node_data['position'],
+        'seo_name'  => !empty($node_data['seo_name']) ? $node_data['seo_name'] : '',
+    ];
+
+    if (fn_allowed_for('MULTIVENDOR')) {
+        $node_table_data['company_id'] = !empty($node_data['company_id']) ? (int) $node_data['company_id'] : 0;
+    }
+
+    $name = !empty($node_data['name']) ? $node_data['name'] : '';
+
     if ($node_id) {
-        db_query('UPDATE ?:nomenclature_nodes SET ?u WHERE node_id = ?i', $node_data, $node_id);
+        db_query('UPDATE ?:nomenclature_nodes SET ?u WHERE node_id = ?i', $node_table_data, $node_id);
     } else {
-        $node_data['timestamp'] = isset($node_data['timestamp']) ? $node_data['timestamp'] : TIME;
-        $node_id = db_query('INSERT INTO ?:nomenclature_nodes ?e', $node_data);
-        db_query('UPDATE ?:nomenclature_nodes SET id_path = ?s WHERE node_id = ?i', $node_id, $node_id);
+        $node_id = db_query('INSERT INTO ?:nomenclature_nodes ?e', $node_table_data);
+        // id_path: root nodes have id_path equal to node_id, children get parent path + own id
+        $parent = db_get_row(
+            'SELECT id_path FROM ?:nomenclature_nodes WHERE node_id = ?i',
+            (int) $node_data['parent_id']
+        );
+        $id_path = !empty($parent['id_path']) ? $parent['id_path'] . '/' . $node_id : (string) $node_id;
+        db_query('UPDATE ?:nomenclature_nodes SET id_path = ?s WHERE node_id = ?i', $id_path, $node_id);
     }
 
-    if (isset($node_data['parent_id'])) {
-        fn_manufacturer_rebuild_id_path($node_id);
+    db_query(
+        'REPLACE INTO ?:nomenclature_node_descriptions ?e',
+        [
+            'node_id'     => $node_id,
+            'lang_code'   => $lang_code,
+            'name'        => $name,
+            'description' => !empty($node_data['description']) ? $node_data['description'] : '',
+        ]
+    );
+
+    if (!empty($node_data['seo_name']) && Registry::get('addons.seo.status') == 'A') {
+        fn_create_seo_name($node_id, 'n', $node_data['seo_name'], 0, 'nomenclature.view', '', $lang_code, true);
     }
 
-    if (isset($node_data['descriptions'])) {
-        foreach ($node_data['descriptions'] as $lang_code => $desc) {
-            $desc = array_merge([
-                'name'        => '',
-                'description' => '',
-                'seo_name'    => '',
-            ], $desc);
-            db_query(
-                'REPLACE INTO ?:nomenclature_node_descriptions ?e',
-                [
-                    'node_id'     => $node_id,
-                    'lang_code'   => $lang_code,
-                    'name'        => $desc['name'],
-                    'description' => $desc['description'],
-                    'seo_name'    => $desc['seo_name'],
-                ]
-            );
-        }
-    }
-
-    if (!empty($product_ids)) {
-        fn_manufacturer_replace_node_products($node_id, $product_ids);
-    }
-
-    fn_attach_image_pairs('manufacturer_image', IMAGE_TYPE_MANUFACTURER_PAGE, $node_id, DESCR_SL);
+    fn_attach_image_pairs('nomenclature_main', IMAGE_TYPE_NOMENCLATURE_MAIN, $node_id, $lang_code);
 
     return $node_id;
 }
 
 /**
- * Rebuilds the id_path of a node and all its descendants.
- *
- * @param int $node_id
- */
-function fn_manufacturer_rebuild_id_path($node_id)
-{
-    $parents = [];
-    $current = $node_id;
-    while ($current) {
-        $parent = db_get_row('SELECT parent_id FROM ?:nomenclature_nodes WHERE node_id = ?i', $current);
-        if (empty($parent)) {
-            break;
-        }
-        if (in_array($current, $parents, true)) {
-            break; // guard against loops
-        }
-        array_unshift($parents, $current);
-        $current = (int) $parent['parent_id'];
-    }
-
-    $id_path = implode('/', $parents);
-    db_query('UPDATE ?:nomenclature_nodes SET id_path = ?s WHERE node_id = ?i', $id_path, $node_id);
-
-    $children = db_get_fields('SELECT node_id FROM ?:nomenclature_nodes WHERE parent_id = ?i', $node_id);
-    foreach ($children as $child_id) {
-        fn_manufacturer_rebuild_id_path($child_id);
-    }
-}
-
-/**
- * Replaces the whole product set linked to a node.
- *
- * @param int   $node_id
- * @param int[] $product_ids
- */
-function fn_manufacturer_replace_node_products($node_id, $product_ids)
-{
-    $product_ids = array_map('intval', (array) $product_ids);
-    $product_ids = array_values(array_unique(array_filter($product_ids)));
-
-    db_query('DELETE FROM ?:nomenclature_links WHERE node_id = ?i', $node_id);
-
-    $rows = [];
-    foreach ($product_ids as $product_id) {
-        $rows[] = [
-            'node_id'    => $node_id,
-            'product_id' => $product_id,
-        ];
-    }
-    if ($rows) {
-        db_query('INSERT INTO ?:nomenclature_links ?m', $rows);
-    }
-}
-
-/**
- * Deletes a nomenclature node (with its children, links and image pairs).
+ * Deletes a nomenclature node (recursively) and its product links.
  *
  * @param int $node_id
  */
 function fn_manufacturer_delete_node($node_id)
 {
-    $node_ids = array_merge([$node_id], fn_manufacturer_get_child_node_ids($node_id));
+    $node_id = (int) $node_id;
+    $children = db_get_fields('SELECT node_id FROM ?:nomenclature_nodes WHERE parent_id = ?i', $node_id);
 
-    foreach ($node_ids as $id) {
-        db_query('DELETE FROM ?:nomenclature_nodes WHERE node_id = ?i', $id);
-        db_query('DELETE FROM ?:nomenclature_node_descriptions WHERE node_id = ?i', $id);
-        db_query('DELETE FROM ?:nomenclature_links WHERE node_id = ?i', $id);
-        fn_delete_image_pairs($id, IMAGE_TYPE_MANUFACTURER_PAGE);
+    foreach ($children as $child_id) {
+        fn_manufacturer_delete_node($child_id);
+    }
+
+    db_query('DELETE FROM ?:nomenclature_links WHERE node_id = ?i', $node_id);
+    db_query('DELETE FROM ?:nomenclature_node_descriptions WHERE node_id = ?i', $node_id);
+    db_query('DELETE FROM ?:nomenclature_nodes WHERE node_id = ?i', $node_id);
+
+    fn_delete_image_pairs($node_id, IMAGE_TYPE_NOMENCLATURE_MAIN);
+
+    if (Registry::get('addons.seo.status') == 'A') {
+        fn_delete_seo_name($node_id, 'n', 'nomenclature.view');
     }
 }
 
 /**
- * Returns a product picker - friendly list of product ids by node.
- *
- * @param int $node_id
- * @param string $lang_code
- *
- * @return int[]
- */
-function fn_manufacturer_get_node_products($node_id)
-{
-    return db_get_fields(
-        'SELECT product_id FROM ?:nomenclature_links WHERE node_id = ?i ORDER BY link_id',
-        $node_id
-    );
-}
-
-/**
- * Returns the number of products linked to a node (incl. children optionally).
- *
- * @param int  $node_id
- * @param bool $recursive
+ * Returns node_id of the first root node (used on the "all manufacturers" page).
  *
  * @return int
  */
-function fn_manufacturer_get_node_products_count($node_id, $recursive = false)
+function fn_manufacturer_get_first_node_id()
 {
-    $product_ids = fn_manufacturer_get_node_product_ids($node_id, $recursive);
-    return count($product_ids);
-}
-
-/**
- * Frontend: fetches products linked to a node for the dynamic features table.
- *
- * @param int $node_id
- * @param array $params
- *
- * @return array ['products', 'params', 'total']
- */
-function fn_manufacturer_get_frontend_products($node_id, $params = [])
-{
-    $params = array_merge([
-        'items_per_page' => Registry::get('addons.manufacturer.frontend_items_per_page') ?: 20,
-        'page'           => 1,
-        'sort_by'        => 'product',
-        'sort_order'     => 'asc',
-        'get_features'   => true,
-    ], $params);
-
-    $product_ids = fn_manufacturer_get_node_product_ids($node_id, true);
-
-    if (empty($product_ids)) {
-        return [[], $params, 0];
-    }
-
-    $p_ids = array_slice($product_ids, ($params['page'] - 1) * $params['items_per_page'], $params['items_per_page']);
-    $p_ids = array_values($p_ids);
-
-    $products = fn_get_products([
-        'pid'            => $p_ids,
-        'status'         => 'A',
-        'extend'         => ['description', 'E'],
-        'sort_by'        => $params['sort_by'],
-        'sort_order'     => $params['sort_order'],
-        'items_per_page' => count($p_ids),
-    ]);
-
-    return [$products, $params, count($product_ids)];
-}
-
-/**
- * Hooks the get_products_pre to filter by nomenclature node when requested.
- */
-function fn_manufacturer_get_products_pre(&$params, $items_per_page, $lang_code)
-{
-    if (!empty($params['nomenclature_node_id'])) {
-        $product_ids = fn_manufacturer_get_node_product_ids((int) $params['nomenclature_node_id'], true);
-        if ($product_ids) {
-            $params['pid'] = $product_ids;
-        } else {
-            $params['pid'] = [0];
-        }
-    }
-}
-
-/**
- * Extends get_products result with linked nomenclature node info.
- */
-function fn_manufacturer_get_products_post(&$products, $params, $lang_code)
-{
-    if (empty($products)) {
-        return;
-    }
-    $product_ids = array_keys($products);
-    $links = db_get_hash_single_array(
-        'SELECT product_id, GROUP_CONCAT(node_id) as node_ids'
-        . ' FROM ?:nomenclature_links WHERE product_id IN (?n) GROUP BY product_id',
-        ['product_id', 'node_ids'], $product_ids
-    );
-    foreach ($products as $product_id => $product) {
-        $products[$product_id]['nomenclature_node_ids'] = !empty($links[$product_id])
-            ? explode(',', $links[$product_id])
-            : [];
-    }
-}
-
-/**
- * Adds linked nomenclature data to product data.
- */
-function fn_manufacturer_get_product_data_post(&$product_data, $auth, $preview, $lang_code)
-{
-    if (empty($product_data['product_id'])) {
-        return;
-    }
-    $product_data['nomenclature_node_ids'] = db_get_fields(
-        'SELECT node_id FROM ?:nomenclature_links WHERE product_id = ?i',
-        $product_data['product_id']
+    return (int) db_get_field(
+        'SELECT node_id FROM ?:nomenclature_nodes WHERE parent_id = 0 ORDER BY position ASC LIMIT 1'
     );
 }
 
 /**
- * Deletes nomenclature links when a product is removed.
- */
-function fn_manufacturer_delete_product_post($product_id, $status)
-{
-    db_query('DELETE FROM ?:nomenclature_links WHERE product_id = ?i', $product_id);
-}
-
-/**
- * Copies nomenclature links on product clone.
- */
-function fn_manufacturer_clone_product($product_id, $new_product_id)
-{
-    $node_ids = db_get_fields('SELECT node_id FROM ?:nomenclature_links WHERE product_id = ?i', $product_id);
-    if ($node_ids) {
-        $rows = [];
-        foreach ($node_ids as $node_id) {
-            $rows[] = [
-                'node_id'    => $node_id,
-                'product_id' => $new_product_id,
-            ];
-        }
-        db_query('INSERT INTO ?:nomenclature_links ?m', $rows);
-    }
-}
-
-/**
- * Returns the seo name (slug) of a node if set, otherwise falls back to node_id.
+ * Returns the node name (used by the picker templates).
  *
  * @param int    $node_id
  * @param string $lang_code
  *
  * @return string
  */
-function fn_manufacturer_get_node_seo_name($node_id, $lang_code = CART_LANGUAGE)
+function fn_manufacturer_get_node_name($node_id, $lang_code = CART_LANGUAGE)
 {
-    $seo_name = db_get_field(
-        'SELECT seo_name FROM ?:nomenclature_node_descriptions WHERE node_id = ?i AND lang_code = ?s',
-        $node_id, $lang_code
+    $node_id = (int) $node_id;
+
+    if (empty($node_id)) {
+        return '';
+    }
+
+    return (string) db_get_field(
+        'SELECT name FROM ?:nomenclature_node_descriptions WHERE node_id = ?i AND lang_code = ?s',
+        $node_id,
+        $lang_code
     );
-    return !empty($seo_name) ? $seo_name : (string) $node_id;
 }
 
 /**
- * Returns the list of feature (characteristic) names found among the products
- * linked to a node. Used to build the dynamic header of the features table.
+ * Returns product_ids linked to the node.
+ *
+ * @param int $node_id
+ *
+ * @return array
+ */
+function fn_manufacturer_get_node_product_ids($node_id)
+{
+    return db_get_fields(
+        'SELECT product_id FROM ?:nomenclature_links WHERE node_id = ?i',
+        (int) $node_id
+    );
+}
+
+/**
+ * Sets the product list for the node (replaces the whole link set).
  *
  * @param int   $node_id
- * @param bool  $recursive
- *
- * @return array [feature_id => feature_name]
+ * @param array $product_ids
  */
-function fn_manufacturer_get_node_features($node_id, $recursive = true)
+function fn_manufacturer_set_node_products($node_id, array $product_ids)
 {
-    $product_ids = fn_manufacturer_get_node_product_ids($node_id, $recursive);
-    if (empty($product_ids)) {
-        return [];
+    $node_id = (int) $node_id;
+    $product_ids = array_map('intval', $product_ids);
+    $product_ids = array_unique(array_filter($product_ids));
+
+    db_query('DELETE FROM ?:nomenclature_links WHERE node_id = ?i', $node_id);
+
+    foreach ($product_ids as $product_id) {
+        db_query(
+            'INSERT INTO ?:nomenclature_links ?e',
+            [
+                'product_id' => $product_id,
+                'node_id'    => $node_id,
+            ]
+        );
     }
-
-    $features = db_get_hash_single_array(
-        'SELECT ?:product_features.feature_id, ?:product_features_descriptions.description'
-        . ' FROM ?:product_features'
-        . ' INNER JOIN ?:product_features_descriptions'
-        . '   ON ?:product_features_descriptions.feature_id = ?:product_features.feature_id'
-        . '  AND ?:product_features_descriptions.lang_code = ?s'
-        . ' INNER JOIN ?:product_features_values'
-        . '   ON ?:product_features_values.feature_id = ?:product_features.feature_id'
-        . ' WHERE ?:product_features.status = ?s'
-        . '   AND ?:product_features_values.product_id IN (?n)'
-        . '   AND ?:product_features_values.lang_code = ?s'
-        . ' GROUP BY ?:product_features.feature_id'
-        . ' ORDER BY ?:product_features.position ASC',
-        ['feature_id', 'description'],
-        CART_LANGUAGE, NOMENCLATURE_STATUS_ACTIVE, $product_ids, CART_LANGUAGE
-    );
-
-    return $features;
 }
 
 /**
- * Returns feature values indexed by product_id for a set of features.
+ * Returns products of the node via the standard CS-Cart products query, enriched
+ * with additional data (features, prices, availability).
  *
- * @param int[] $product_ids
- * @param int[] $feature_ids
+ * @param array $params
+ * @param int   $node_id
  * @param string $lang_code
  *
- * @return array [product_id => [feature_id => value (string)]]
+ * @return array
  */
-function fn_manufacturer_get_features_matrix($product_ids, $feature_ids, $lang_code = CART_LANGUAGE)
+function fn_manufacturer_get_node_products($params = [], $node_id = 0, $lang_code = CART_LANGUAGE)
 {
-    if (empty($product_ids) || empty($feature_ids)) {
+    $default_params = [
+        'page'           => 1,
+        'items_per_page' => 0,
+        'sort_by'        => 'timestamp',
+        'sort_order'     => 'desc',
+        'status'         => 'A',
+        'extend'         => ['description'],
+    ];
+
+    $params = array_merge($default_params, $params);
+    $node_id = (int) $node_id;
+
+    if ($node_id) {
+        $product_ids = fn_manufacturer_get_node_product_ids($node_id);
+    } else {
+        $product_ids = [];
+    }
+
+    if (empty($product_ids)) {
+        return [[], $params];
+    }
+
+    // Impose the node product list on the standard product query through ?w with IN.
+    $params['pid'] = $product_ids;
+    $params['force_search'] = true;
+
+    list($products, $params) = fn_get_products($params, $params['items_per_page'], $lang_code);
+
+    // Enrich with features and prices — the standard CS-Cart way.
+    $auth = Tygh::$app['session']['auth'];
+    foreach ($products as $product_id => $product) {
+        $products[$product_id] = fn_get_product_data($product_id, $auth, $lang_code);
+    }
+
+    return [$products, $params];
+}
+
+/**
+ * Returns the list of product features (technical characteristics) for a product
+ * product list, grouped by feature.
+ *
+ * @param array $products Products list (product_id => product_data)
+ * @param string $lang_code
+ *
+ * @return array feature_id => feature_data with 'value' filled
+ */
+function fn_manufacturer_get_products_features(array $products, $lang_code = CART_LANGUAGE)
+{
+    if (empty($products)) {
         return [];
     }
 
-    $matrix = [];
-    foreach ($product_ids as $product_id) {
-        $matrix[$product_id] = array_fill_keys($feature_ids, '');
-    }
+    $product_ids = array_keys($products);
+    $features = fn_get_product_features([
+        'product_id'     => $product_ids,
+        'variants'       => true,
+        'existent_only'  => false,
+        'plain'          => true,
+    ], 0, $lang_code);
 
-    $variants = db_get_array(
-        'SELECT ?:product_features_values.product_id, ?:product_features_values.feature_id,'
-        . ' ?:product_features_values.value, ?:product_features_values.value_int,'
-        . ' ?:product_features_values.variant_id, ?:product_feature_variants_descriptions.variant'
-        . ' FROM ?:product_features_values'
-        . ' LEFT JOIN ?:product_feature_variants_descriptions'
-        . '   ON ?:product_feature_variants_descriptions.variant_id = ?:product_features_values.variant_id'
-        . '  AND ?:product_feature_variants_descriptions.lang_code = ?s'
-        . ' WHERE ?:product_features_values.product_id IN (?n)'
-        . '   AND ?:product_features_values.feature_id IN (?n)'
-        . '   AND ?:product_features_values.lang_code = ?s',
-        $lang_code, $product_ids, $feature_ids, $lang_code
-    );
+    $features = !empty($features) ? reset($features) : [];
 
-    foreach ($variants as $v) {
-        $pid = (int) $v['product_id'];
-        $fid = (int) $v['feature_id'];
-        if (!empty($v['variant'])) {
-            $matrix[$pid][$fid] = $v['variant'];
-        } elseif ($v['value'] !== '' && $v['value'] !== null) {
-            $matrix[$pid][$fid] = $v['value'];
-        } elseif ($v['value_int'] !== '' && $v['value_int'] !== null) {
-            $matrix[$pid][$fid] = $v['value_int'];
+    $result = [];
+
+    foreach ($features as $feature_id => $feature) {
+        if (empty($feature['feature_id'])) {
+            continue;
+        }
+
+        $feature_id = (int) $feature['feature_id'];
+        $result[$feature_id] = [
+            'description' => !empty($feature['description']) ? $feature['description'] : $feature['internal_name'],
+            'values'      => [],
+        ];
+
+        foreach ($products as $product_id => $product) {
+            $value = '';
+            if (!empty($product['product_features'][$feature_id])) {
+                $pf = $product['product_features'][$feature_id];
+                if (!empty($pf['variant'])) {
+                    $value = is_array($pf['variant']) ? reset($pf['variant']) : $pf['variant'];
+                } elseif (isset($pf['value'])) {
+                    $value = $pf['value'];
+                }
+            }
+            $result[$feature_id]['values'][$product_id] = $value;
         }
     }
 
-    return $matrix;
+    return $result;
+}
+
+/**
+ * Migration from ?:pages (2.x architecture) to ?:nomenclature_nodes on install.
+ * Idempotent: pages of type M/C/G are converted to nodes only if they were not
+ * migrated yet (no nomenclature data present).
+ */
+function fn_manufacturer_migrate_from_pages()
+{
+    $has_nodes = db_get_field('SELECT COUNT(*) FROM ?:nomenclature_nodes');
+
+    if (!empty($has_nodes)) {
+        return true;
+    }
+
+    $pages = db_get_array(
+        'SELECT p.page_id, p.parent_id, p.id_path, p.status, p.position, p.timestamp,'
+        . ' p.manufacturer_elem_type, pd.page AS name, pd.description, pd.lang_code'
+        . ' FROM ?:pages AS p'
+        . ' LEFT JOIN ?:page_descriptions AS pd ON pd.page_id = p.page_id'
+        . ' WHERE p.page_type = ?s'
+        . ' ORDER BY p.parent_id ASC, p.position ASC',
+        'M'
+    );
+
+    if (empty($pages)) {
+        return true;
+    }
+
+    $node_id_map = [];
+
+    foreach ($pages as $page) {
+        $elem_type = !empty($page['manufacturer_elem_type'])
+            ? $page['manufacturer_elem_type']
+            : (empty($page['parent_id']) ? 'M' : 'C');
+
+        if (!in_array($elem_type, ['M', 'C', 'G'], true)) {
+            $elem_type = empty($page['parent_id']) ? 'M' : 'C';
+        }
+
+        $node_id = (int) $page['page_id'];
+        $mapped_parent = !empty($node_id_map[$page['parent_id']])
+            ? (int) $node_id_map[$page['parent_id']]
+            : 0;
+
+        db_query(
+            'INSERT INTO ?:nomenclature_nodes ?e',
+            [
+                'node_id'    => $node_id,
+                'parent_id'  => $mapped_parent,
+                'id_path'    => $mapped_parent
+                    ? (db_get_field('SELECT id_path FROM ?:nomenclature_nodes WHERE node_id = ?i', $mapped_parent) . '/' . $node_id)
+                    : (string) $node_id,
+                'status'     => $page['status'],
+                'node_type'  => $elem_type,
+                'position'   => (int) $page['position'],
+                'timestamp'  => (int) $page['timestamp'],
+            ]
+        );
+
+        $node_id_map[$page['page_id']] = $node_id;
+
+        if (!empty($page['lang_code'])) {
+            db_query(
+                'REPLACE INTO ?:nomenclature_node_descriptions ?e',
+                [
+                    'node_id'     => $node_id,
+                    'lang_code'   => $page['lang_code'],
+                    'name'        => $page['name'],
+                    'description' => $page['description'],
+                ]
+            );
+        }
+
+        // Migrate image pairs from the old 'manufacturer_page' type to 'nomenclature_main'
+        $pairs = db_get_array(
+            'SELECT * FROM ?:images_links WHERE object_id = ?i AND object_type = ?s',
+            $node_id,
+            'manufacturer_page'
+        );
+
+        foreach ($pairs as $pair) {
+            $pair['object_type'] = IMAGE_TYPE_NOMENCLATURE_MAIN;
+            $pair['pair_id'] = 0;
+            db_query('INSERT INTO ?:images_links ?e', $pair);
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Removes the old 2.x manufacturer pages from ?:pages and the helper column.
+ * Called after the data migration, so the addon fully stops using the core
+ * pages entity (page_type = 'M').
+ */
+function fn_manufacturer_remove_old_pages()
+{
+    $is_exists = db_get_row(
+        'SHOW COLUMNS FROM ?:pages LIKE ?s',
+        'manufacturer_elem_type'
+    );
+    if (!empty($is_exists)) {
+        db_query('ALTER TABLE ?:pages DROP COLUMN manufacturer_elem_type');
+    }
+
+    $page_ids = db_get_fields(
+        'SELECT page_id FROM ?:pages WHERE page_type = ?s',
+        'M'
+    );
+
+    foreach ($page_ids as $page_id) {
+        $page_id = (int) $page_id;
+        $exists = db_get_field(
+            'SELECT page_id FROM ?:pages WHERE page_id = ?i',
+            $page_id
+        );
+        if ($exists) {
+            fn_delete_page($page_id, true);
+        }
+    }
+}
+
+/**
+ * Install helper: creates tables (defensive, in case queries section was skipped),
+ * migrates data from the old pages architecture, and migrates SEO names.
+ */
+function fn_manufacturer_install()
+{
+    fn_manufacturer_migrate_from_pages();
+
+    // Migrate SEO names for the old pages.view dispatch to nomenclature.view
+    if (Registry::get('addons.seo.status') == 'A') {
+        $seo_names = db_get_array(
+            'SELECT * FROM ?:seo_names WHERE type = ?s AND dispatch = ?s',
+            'p',
+            'pages.view'
+        );
+
+        foreach ($seo_names as $seo_name) {
+            $page_id = (int) $seo_name['object_id'];
+            $dispatch_updated = db_get_field(
+                'SELECT COUNT(*) FROM ?:seo_names WHERE object_id = ?i AND type = ?s AND dispatch = ?s',
+                $page_id,
+                'n',
+                'nomenclature.view'
+            );
+
+            if ($dispatch_updated) {
+                continue;
+            }
+
+            db_query(
+                'UPDATE ?:seo_names SET type = ?s, dispatch = ?s WHERE object_id = ?i AND type = ?s AND dispatch = ?s',
+                'n',
+                'nomenclature.view',
+                $page_id,
+                'p',
+                'pages.view'
+            );
+        }
+    }
+
+    // Full detach from the core pages entity: drop the old M-pages and helper column.
+    fn_manufacturer_remove_old_pages();
+
+    return true;
+}
+
+/**
+ * Uninstall helper: removes nomenclature tables and data.
+ */
+function fn_manufacturer_uninstall()
+{
+    db_query('DROP TABLE IF EXISTS ?:nomenclature_links');
+    db_query('DROP TABLE IF EXISTS ?:nomenclature_node_descriptions');
+    db_query('DROP TABLE IF EXISTS ?:nomenclature_nodes');
+
+    return true;
+}
+
+/**
+ * Hook: delete_product_post — clean links when a product is removed.
+ *
+ * @param int  $product_id
+ * @param bool $product_deleted
+ */
+function fn_manufacturer_delete_product_post($product_id, $product_deleted)
+{
+    if ($product_deleted) {
+        db_query('DELETE FROM ?:nomenclature_links WHERE product_id = ?i', (int) $product_id);
+    }
+}
+
+/**
+ * Hook: get_product_data_post — expose the nodes a product belongs to.
+ *
+ * @param array  $product_data
+ * @param array  $auth
+ * @param bool   $preview
+ * @param string $lang_code
+ */
+function fn_manufacturer_get_product_data_post(&$product_data, $auth, $preview, $lang_code)
+{
+    if (!empty($product_data['product_id'])) {
+        $node_ids = db_get_fields(
+            'SELECT node_id FROM ?:nomenclature_links WHERE product_id = ?i',
+            (int) $product_data['product_id']
+        );
+
+        if (!empty($node_ids)) {
+            $product_data['nomenclature_node_ids'] = $node_ids;
+        }
+    }
+}
+
+/**
+ * Hook: get_products — allow filtering products by node through the params.
+ *
+ * @param array  $params
+ * @param array  $fields
+ * @param array  $sortings
+ * @param string $condition
+ * @param string $join
+ * @param string $sorting
+ * @param string $group_by
+ * @param string $lang_code
+ * @param string $having
+ */
+function fn_manufacturer_get_products(&$params, &$fields, &$sortings, &$condition, &$join, &$sorting, &$group_by, &$lang_code, &$having)
+{
+    if (!empty($params['nomenclature_node_id'])) {
+        $node_id = (int) $params['nomenclature_node_id'];
+        $product_ids = fn_manufacturer_get_node_product_ids($node_id);
+
+        if (empty($product_ids)) {
+            $condition .= ' AND 1 = 0';
+        } else {
+            $condition .= ' AND ?:products.product_id IN (' . implode(',', $product_ids) . ')';
+        }
+    }
 }

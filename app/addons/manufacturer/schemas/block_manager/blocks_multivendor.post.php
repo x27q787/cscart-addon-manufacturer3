@@ -12,18 +12,17 @@
 * "copyright.txt" FILE PROVIDED WITH THIS DISTRIBUTION PACKAGE.            *
 ****************************************************************************/
 
-use Tygh\Registry;
 use Tygh\Enum\ObjectStatuses;
 use Tygh\Enum\YesNo;
 
 defined('BOOTSTRAP') or die('Access denied');
 
-require_once Registry::get('config.dir.addons') . 'manufacturer/schemas/block_manager/blocks.functions.php';
-
 /**
  * @var array<string, array> $schema
  */
-$schema['manufacturer'] = [
+$schema['manufacturer']['is_managed_by'] = ['ROOT'];
+
+$schema['vendor_manufacturer'] = [
     'content' => [
         'items' => [
             'type'           => 'enum',
@@ -31,14 +30,17 @@ $schema['manufacturer'] = [
             'items_function' => 'fn_manufacturer_get_items_for_block',
             'remove_indent'  => true,
             'hide_label'     => true,
-            'fillings' => [
+            'fillings'       => [
                 'manufacturer.recent_posts_scroller' => [
                     'params' => [
                         'simple'     => true,
                         'sort_by'    => 'timestamp',
                         'sort_order' => 'desc',
                         'status'     => ObjectStatuses::ACTIVE,
-                        'get_image'  => true
+                        'get_image'  => true,
+                        'request'    => [
+                            'company_id' => '%COMPANY_ID%',
+                        ],
                     ],
                 ],
                 'manufacturer.recent_posts' => [
@@ -47,7 +49,10 @@ $schema['manufacturer'] = [
                         'sort_by'    => 'timestamp',
                         'sort_order' => 'desc',
                         'status'     => ObjectStatuses::ACTIVE,
-                    ]
+                        'request'    => [
+                            'company_id' => '%COMPANY_ID%',
+                        ],
+                    ],
                 ],
                 'manufacturer.text_links' => [
                     'params' => [
@@ -55,6 +60,9 @@ $schema['manufacturer'] = [
                         'sort_by'    => 'timestamp',
                         'sort_order' => 'desc',
                         'status'     => ObjectStatuses::ACTIVE,
+                        'request'    => [
+                            'company_id' => '%COMPANY_ID%',
+                        ],
                     ],
                     'settings' => [
                         'parent_node_id' => [
@@ -68,7 +76,7 @@ $schema['manufacturer'] = [
                             ],
                         ],
                         'limit' => [
-                            'type'          => 'input',
+                            'type' => 'input',
                             'default_value' => 10
                         ],
                     ],
@@ -78,11 +86,12 @@ $schema['manufacturer'] = [
     ],
     'templates' => 'addons/manufacturer/blocks',
     'wrappers'  => 'blocks/wrappers',
-    'cache' => [
+    'cache'     => [
         'update_handlers'  => ['nomenclature_nodes', 'nomenclature_node_descriptions', 'nomenclature_links'],
         'request_handlers' => ['%NODE_ID%', '%COMPANY_ID%']
     ],
-    'brief_info_function' => 'fn_block_get_manufacturer_info'
+    'brief_info_function' => 'fn_block_get_manufacturer_info',
+    'is_managed_by' => ['ROOT', 'VENDOR']
 ];
 
 return $schema;

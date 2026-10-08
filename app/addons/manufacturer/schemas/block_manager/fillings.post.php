@@ -14,8 +14,14 @@
 
 $schema['manufacturer.recent_posts_scroller'] = array(
     'parent_node_id' => array (
-        'type' => 'input',
+        'type' => 'picker',
         'default_value' => '0',
+        'picker' => 'addons/manufacturer/pickers/nodes/picker.tpl',
+        'picker_params' => array (
+            'multiple' => false,
+            'use_keys' => 'N',
+            'default_name' => __('root_level'),
+        ),
     ),
     'period' => array (
         'type' => 'selectbox',

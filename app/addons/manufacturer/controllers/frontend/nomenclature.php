@@ -16,48 +16,59 @@ use Tygh\Registry;
 
 if (!defined('BOOTSTRAP')) { die('Access denied'); }
 
-$lang_code = CART_LANGUAGE;
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    return [CONTROLLER_STATUS_OK];
-}
-
 if ($mode == 'view') {
 
     $node_id = !empty($_REQUEST['node_id']) ? (int) $_REQUEST['node_id'] : 0;
-    $node = fn_manufacturer_get_node_data($node_id, $lang_code);
 
-    if (empty($node) || $node['status'] != NOMENCLATURE_STATUS_ACTIVE) {
+    if (empty($node_id)) {
+        $node_id = fn_manufacturer_get_first_node_id();
+    }
+
+    $node_data = fn_manufacturer_get_node_data($node_id, CART_LANGUAGE);
+
+    if (empty($node_data) || $node_data['status'] != 'A') {
         return [CONTROLLER_STATUS_NO_PAGE];
     }
 
-    $params = $_REQUEST;
-    list($products, $search, $total) = fn_manufacturer_get_frontend_products($node_id, $params);
+    // Tree of child nodes (categories/groups) for the sidebar
+    $child_nodes = fn_manufacturer_get_nodes_tree(['status' => 'A', 'lang_code' => CART_LANGUAGE], $node_id);
 
-    $features = [];
-    $features_matrix = [];
+    // Products of the node (only product groups carry product lists)
+    $params = [
+        'page'           => !empty($_REQUEST['page']) ? (int) $_REQUEST['page'] : 1,
+        'items_per_page' => Registry::get('settings.Appearance.elements_per_page'),
+        'sort_by'        => !empty($_REQUEST['sort_by']) ? $_REQUEST['sort_by'] : 'timestamp',
+        'sort_order'     => !empty($_REQUEST['sort_order']) ? $_REQUEST['sort_order'] : 'desc',
+    ];
 
-    $product_ids = array_keys($products);
-    if ($product_ids) {
-        $features = fn_manufacturer_get_node_features($node_id, true);
-        $features_matrix = fn_manufacturer_get_features_matrix($product_ids, array_keys($features), $lang_code);
-    }
+    list($products, $search) = fn_manufacturer_get_node_products($params, $node_id, CART_LANGUAGE);
 
-    $child_nodes = [];
-    list($child_nodes) = fn_manufacturer_get_nodes([
-        'parent_id' => $node_id,
-        'status'    => NOMENCLATURE_STATUS_ACTIVE,
-        'get_tree'  => true,
-    ], 0, $lang_code);
+    // Technical characteristics (features) for the product table
+    $features = fn_manufacturer_get_products_features($products, CART_LANGUAGE);
 
-    Tygh::$app['view']->assign('node', $node);
-    Tygh::$app['view']->assign('products', $products);
-    Tygh::$app['view']->assign('features', $features);
-    Tygh::$app['view']->assign('features_matrix', $features_matrix);
+    Tygh::$app['view']->assign('node_data', $node_data);
+    Tygh::$app['view']->assign('node_id', $node_id);
     Tygh::$app['view']->assign('child_nodes', $child_nodes);
+    Tygh::$app['view']->assign('products', $products);
     Tygh::$app['view']->assign('search', $search);
-    Tygh::$app['view']->assign('total', $total);
-    Tygh::$app['view']->assign('pagination', fn_paginate($total, $search['page'], $search['items_per_page']));
-}
+    Tygh::$app['view']->assign('features', $features);
 
-return [CONTROLLER_STATUS_OK];
+    Tygh::$app['view']->assign('show_qty', false);
+    Tygh::$app['view']->assign('show_features', true);
+    Tygh::$app['view']->assign('show_price', true);
+    Tygh::$app['view']->assign('show_sku', true);
+    Tygh::$app['view']->assign('show_add_to_cart', false);
+    Tygh::$app['view']->assign('show_amount', true);
+    Tygh::$app['view']->assign('show_list_buttons', false);
+    Tygh::$app['view']->assign('show_discount_label', true);
+    Tygh::$app['view']->assign('show_old_price', true);
+    Tygh::$app['view']->assign('show_clean_price', true);
+
+    // Page meta from the SEO object
+    if (Registry::get('addons.seo.status') == 'A') {
+        $seo_name = fn_get_seo_name($node_id, 'n', CART_LANGUAGE);
+        if (!empty($seo_name)) {
+            Tygh::$app['view']->assign('seo_name', $seo_name);
+        }
+    }
+}

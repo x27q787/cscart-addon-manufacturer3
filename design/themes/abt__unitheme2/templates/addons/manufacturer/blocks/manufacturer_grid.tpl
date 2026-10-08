@@ -1,5 +1,5 @@
 {** block-description:manufacturer_children **}
-{** Дочерние страницы производителя (категории/серии) в виде плиток с картинками — UniTheme2 **}
+{** Дочерние узлы номенклатуры (категории/группы) в виде плиток с картинками — UniTheme2 **}
 
 {if $items}
 
@@ -17,7 +17,7 @@
             {if $node.description}
                 <div class="ty-manufacturer__description">
                     <div class="ty-wysiwyg-content">
-                        <div>{$node.description nofilter}</div>{* spoiler заполняется хуком post_get_pages по <!--CUT--> *}
+                        {$node.description nofilter}
                     </div>
                 </div>
             {/if}

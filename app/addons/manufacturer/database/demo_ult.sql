@@ -1,0 +1,2 @@
+UPDATE ?:nomenclature_nodes SET company_id = 1 WHERE node_id IN (7,40,41,42,43);
+INSERT INTO ?:ult_objects_sharing (`share_company_id`, `share_object_id`, `share_object_type`) SELECT 1 as share_company_id, node_id as share_object_id, 'nomenclature_nodes' as share_object_type FROM ?:nomenclature_nodes WHERE node_id IN (7,40,41,42,43);

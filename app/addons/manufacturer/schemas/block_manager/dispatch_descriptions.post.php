@@ -12,12 +12,6 @@
 * "copyright.txt" FILE PROVIDED WITH THIS DISTRIBUTION PACKAGE.            *
 ****************************************************************************/
 
-$schema['nomenclature']['view'] = array(
-    'base_url' => 'nomenclature.view?node_id=[node_id]',
-    'request_handlers' => array(
-        'node_id' => true
-    ),
-    'search' => true
-);
+$schema['nomenclature.view'] = 'nomenclature';
 
 return $schema;

@@ -12,14 +12,15 @@
 * "copyright.txt" FILE PROVIDED WITH THIS DISTRIBUTION PACKAGE.            *
 ****************************************************************************/
 
-use Tygh\Registry;
-
 $schema['central']['website']['items']['manufacturer'] = [
     'attrs' => [
         'class' => 'is-addon'
     ],
     'href' => 'nomenclature.manage',
-    'alt' => 'nomenclature.manage,nomenclature.update,nomenclature.update?node_id=%NODE_ID%',
+    'alt' => 'nomenclature.manage'
+        . ',nomenclature.update?node_id=%NODE_ID%'
+        . ',nomenclature.add?parent_id=%NODE_ID%'
+        . ',nomenclature.add',
     'position' => 150
 ];
 

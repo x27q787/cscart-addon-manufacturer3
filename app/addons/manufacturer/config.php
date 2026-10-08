@@ -14,6 +14,8 @@
 
 if (!defined('BOOTSTRAP')) { die('Access denied'); }
 
-fn_define('IMAGE_TYPE_MANUFACTURER_PAGE', 'manufacturer_page');
+fn_define('IMAGE_TYPE_NOMENCLATURE_MAIN', 'nomenclature_main');
 fn_define('NOMENCLATURE_STATUS_ACTIVE', 'A');
 fn_define('NOMENCLATURE_STATUS_DISABLED', 'D');
+fn_define('NOMENCLATURE_LINKS_TABLE', 'nomenclature_links');
+fn_define('NOMENCLATURE_NODES_TABLE', 'nomenclature_nodes');
